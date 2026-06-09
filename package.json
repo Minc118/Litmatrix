@@ -1,0 +1,31 @@
+{
+  "name": "litmatrix",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "NEXT_SWC_PATH=.next/cache/next-swc next dev",
+    "build": "NEXT_SWC_PATH=.next/cache/next-swc next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lucide-react": "1.17.0",
+    "next": "15.5.19",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "server-only": "latest"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "latest",
+    "@tailwindcss/postcss": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest"
+  }
+}
