@@ -20,10 +20,10 @@ export function LandingHero() {
         <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
           <Link
             href="/new"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[#1f2933] bg-[#1f2933] px-8 py-3 text-sm font-semibold !text-white transition-colors hover:bg-[#2b3642] sm:w-auto [&_span]:!text-white [&_svg]:!text-white"
           >
-            Start New Analysis
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            <span className="!text-white">Start New Analysis</span>
+            <ArrowRight className="h-4 w-4 text-white stroke-white" aria-hidden="true" />
           </Link>
           <Link
             href="/projects/ocpm-demo"

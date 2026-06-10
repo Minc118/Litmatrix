@@ -5,9 +5,11 @@ import { ReviewDecisionControls } from "@/components/review/ReviewDecisionContro
 export function SuggestionCard({
   suggestion,
   paper,
+  onChanged,
 }: {
   suggestion: AISuggestion;
   paper?: Paper;
+  onChanged?: () => void;
 }) {
   return (
     <article className="lm-card p-5">
@@ -29,7 +31,7 @@ export function SuggestionCard({
         <p className="text-xs leading-5 text-muted">
           {suggestion.evidence[0]?.note ?? "No evidence note available."}
         </p>
-        <ReviewDecisionControls />
+        <ReviewDecisionControls suggestion={suggestion} onChanged={onChanged} />
       </div>
     </article>
   );

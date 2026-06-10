@@ -5,13 +5,19 @@ import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
 import { StageTabs } from "@/components/analysis/StageTabs";
 import { PDFViewerShell } from "@/components/papers/PDFViewerShell";
 import { SuggestionCard } from "@/components/review/SuggestionCard";
+import { WorkflowCtaBar } from "@/components/common/WorkflowCtaBar";
+import { InertActionBadge } from "@/components/common/InertActionBadge";
 import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
 import type { AISuggestion, Paper, ReviewDecision } from "@/lib/types/litmatrix";
 
 export function ReviewWorkspaceView({ projectId }: { projectId: string }) {
   const { data: papers } = useLitmatrixResource<Paper[]>(`/api/projects/${projectId}/papers`);
-  const { data: suggestions } = useLitmatrixResource<AISuggestion[]>(`/api/projects/${projectId}/suggestions`);
-  const { data: decisions } = useLitmatrixResource<ReviewDecision[]>(`/api/projects/${projectId}/review-decisions`);
+  const { data: suggestions, reload: reloadSuggestions } = useLitmatrixResource<AISuggestion[]>(
+    `/api/projects/${projectId}/suggestions`,
+  );
+  const { data: decisions, reload: reloadDecisions } = useLitmatrixResource<ReviewDecision[]>(
+    `/api/projects/${projectId}/review-decisions`,
+  );
   const paperById = new Map((papers ?? []).map((paper) => [paper.id, paper]));
   const suggestionList = suggestions ?? [];
 
@@ -27,6 +33,7 @@ export function ReviewWorkspaceView({ projectId }: { projectId: string }) {
               active="review"
               reviewCount={suggestionList.filter((suggestion) => suggestion.status === "pending-review").length}
             />
+            <WorkflowCtaBar items={[{ label: "Open extraction matrix", href: `/projects/${projectId}/matrix`, primary: true }]} />
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <h1 className="text-2xl font-semibold tracking-tight text-foreground">Review AI Suggestions</h1>
@@ -42,12 +49,20 @@ export function ReviewWorkspaceView({ projectId }: { projectId: string }) {
                   key={suggestion.id}
                   suggestion={suggestion}
                   paper={suggestion.paperId ? paperById.get(suggestion.paperId) : undefined}
+                  onChanged={() => {
+                    reloadSuggestions();
+                    reloadDecisions();
+                  }}
                 />
               ))}
             </div>
             <div className="sticky bottom-0 rounded border border-border/50 bg-[#fdfdfd]/90 p-4 backdrop-blur">
-              <button className="w-full rounded-sm bg-primary px-4 py-3 text-sm font-medium text-primary-foreground opacity-70" disabled>
-                Save Confirmed Values to Extraction Matrix
+              <button
+                className="flex w-full items-center justify-center gap-2 rounded-sm border border-border/60 bg-surface px-4 py-3 text-sm font-medium text-muted opacity-80"
+                disabled
+              >
+                Batch save confirmed values
+                <InertActionBadge label="Coming soon" />
               </button>
             </div>
           </section>

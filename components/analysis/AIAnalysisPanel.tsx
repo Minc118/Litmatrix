@@ -1,4 +1,5 @@
 import { Brain, Play } from "lucide-react";
+import { InertActionBadge } from "@/components/common/InertActionBadge";
 import type { AISuggestion, ProjectDetail, ResearchQuestion } from "@/lib/types/litmatrix";
 import { ConfidenceBadge, EvidenceLevelBadge, ReviewStatusBadge, SourceBadge } from "@/components/common/StatusBadges";
 
@@ -19,15 +20,17 @@ export function AIAnalysisPanel({
             <p className="lm-label">Analysis Configuration</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">AI Analysis</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-              This route shows provider-agnostic demo suggestions. Real analysis execution is disabled.
+              This route shows provider-agnostic demo suggestions. Gemini overview/extraction is available only after
+              database migration and provider configuration.
             </p>
           </div>
           <button
-            className="inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground opacity-70"
+            className="inline-flex items-center justify-center gap-2 rounded-sm border border-border/60 bg-surface px-4 py-2.5 text-sm font-medium text-muted opacity-80"
             disabled
           >
             <Play className="h-4 w-4" aria-hidden="true" />
             Run Analysis
+            <InertActionBadge label="Not connected" />
           </button>
         </div>
         <div className="mt-6 grid gap-4 lg:grid-cols-2">

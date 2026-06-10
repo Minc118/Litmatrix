@@ -27,9 +27,9 @@ export function LandingTopNav() {
           </button>
           <Link
             href="/new"
-            className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="rounded-sm border border-[#1f2933] bg-[#1f2933] px-4 py-2 text-sm font-semibold !text-white transition-colors hover:bg-[#2b3642] [&_span]:!text-white [&_svg]:!text-white"
           >
-            Start New Analysis
+            <span className="!text-white">Start New Analysis</span>
           </Link>
         </div>
         <button className="p-2 text-muted md:hidden" aria-label="Open navigation" disabled>

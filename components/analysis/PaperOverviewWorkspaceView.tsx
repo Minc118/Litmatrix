@@ -5,6 +5,7 @@ import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
 import { StageTabs } from "@/components/analysis/StageTabs";
 import { PaperOverviewPanel } from "@/components/analysis/PaperOverviewPanel";
 import { PDFViewerShell } from "@/components/papers/PDFViewerShell";
+import { WorkflowCtaBar } from "@/components/common/WorkflowCtaBar";
 import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
 import type { AISuggestion, Paper, PaperOverview } from "@/lib/types/litmatrix";
 
@@ -26,6 +27,12 @@ export function PaperOverviewWorkspaceView({ projectId }: { projectId: string })
               projectId={projectId}
               active="overview"
               reviewCount={(suggestions ?? []).filter((suggestion) => suggestion.status === "pending-review").length}
+            />
+            <WorkflowCtaBar
+              items={[
+                { label: "Run analysis", href: `/projects/${projectId}/analysis`, primary: true },
+                { label: "Review suggestions", href: `/projects/${projectId}/review` },
+              ]}
             />
             <PaperOverviewPanel overview={overview} paper={paper} />
           </section>

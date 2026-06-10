@@ -14,8 +14,11 @@ export function TopNav() {
           <Link href="/projects" className="hover:text-foreground">
             Projects
           </Link>
-          <Link href="/projects/ocpm-demo" className="rounded-sm bg-primary px-3 py-2 text-primary-foreground">
-            Demo Project
+          <Link
+            href="/projects/ocpm-demo"
+            className="rounded-sm border border-[#1f2933] bg-[#1f2933] px-3 py-2 !text-white [&_span]:!text-white [&_svg]:!text-white"
+          >
+            <span className="!text-white">Demo Project</span>
           </Link>
         </div>
       </div>

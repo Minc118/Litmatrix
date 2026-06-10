@@ -13,7 +13,7 @@ import {
   Network,
   Rows3,
   Settings2,
-  Upload,
+  FilePlus2,
 } from "lucide-react";
 
 const navItems = [
@@ -40,17 +40,20 @@ export function ProjectSidebar({ projectId }: { projectId: string }) {
   return (
     <aside className="flex min-h-screen w-[280px] shrink-0 flex-col border-r border-border/50 bg-[#f8fafc]">
       <div className="border-b border-border/40 p-6">
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted">LitMatrix</p>
+        <Link href="/" className="text-xs font-semibold uppercase tracking-widest text-muted hover:text-foreground">
+          LitMatrix
+        </Link>
         <h1 className="mt-1 text-lg font-bold tracking-tight text-foreground">{projectLabel}</h1>
       </div>
       <div className="p-4">
         <Link
           href="/new"
-          className="flex items-center justify-center gap-2 rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+          className="flex items-center justify-center gap-2 rounded-sm border border-[#1f2933] bg-[#1f2933] px-4 py-2 text-sm font-semibold !text-white shadow-sm transition-colors hover:bg-[#2b3642] [&_span]:!text-white [&_svg]:!text-white"
         >
-          <Upload className="h-4 w-4" aria-hidden="true" />
-          Upload Paper
+          <FilePlus2 className="h-4 w-4 text-white stroke-white" aria-hidden="true" />
+          <span className="!text-white">New Analysis</span>
         </Link>
+        <p className="mt-2 text-xs leading-5 text-muted">PDF upload is visual-only; demo data uses seeded OCPM papers.</p>
       </div>
       <nav className="flex-1 space-y-1 p-4">
         {navItems.map((item) => {
@@ -62,11 +65,14 @@ export function ProjectSidebar({ projectId }: { projectId: string }) {
               key={item.label}
               href={href}
               className={`flex items-center gap-3 rounded px-3 py-2 text-sm transition-colors ${
-                active ? "bg-foreground text-primary-foreground" : "text-muted hover:bg-surface-muted hover:text-foreground"
+                active
+                  ? "border border-[#1f2933] bg-[#1f2933] font-semibold !text-white shadow-sm [&_span]:!text-white [&_svg]:!text-white"
+                  : "border border-transparent text-muted hover:border-border/50 hover:bg-surface-muted hover:text-foreground"
               }`}
+              aria-current={active ? "page" : undefined}
             >
-              <Icon className="h-4 w-4" aria-hidden="true" />
-              {item.label}
+              <Icon className={`h-4 w-4 ${active ? "text-white stroke-white" : ""}`} aria-hidden="true" />
+              <span className={active ? "!text-white" : ""}>{item.label}</span>
             </Link>
           );
         })}

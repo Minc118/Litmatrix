@@ -4,6 +4,8 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
 import { UploadDropzone } from "@/components/import/UploadDropzone";
 import { WorkflowSteps } from "@/components/import/WorkflowSteps";
+import { ImportIntegrationStatus } from "@/components/import/ImportIntegrationStatus";
+import { WorkflowCtaBar } from "@/components/common/WorkflowCtaBar";
 import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
 import type { ProviderStatusResponse } from "@/lib/types/litmatrix";
 
@@ -21,10 +23,13 @@ export function NewAnalysisWorkspace() {
               <p className="lm-label">Paper Intake</p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">Start a focused paper review</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-                Upload a PDF to generate an overview before deciding whether it is worth deeper extraction.
+                Use the seeded OCPM demo project today. PDF upload, Zotero import, and Antigravity import are planned
+                integrations and are not connected yet.
               </p>
             </header>
             <UploadDropzone />
+            <ImportIntegrationStatus providerStatus={providerStatus} />
+            <WorkflowCtaBar items={[{ label: "Open OCPM demo project", href: "/projects/ocpm-demo", primary: true }]} />
             <section className="lm-card p-6">
               <p className="lm-label">Workflow Guide</p>
               <div className="mt-6">

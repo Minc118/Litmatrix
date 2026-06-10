@@ -5,6 +5,7 @@ import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
 import { StageTabs } from "@/components/analysis/StageTabs";
 import { AIAnalysisPanel } from "@/components/analysis/AIAnalysisPanel";
 import { PDFViewerShell } from "@/components/papers/PDFViewerShell";
+import { WorkflowCtaBar } from "@/components/common/WorkflowCtaBar";
 import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
 import type { AISuggestion, Paper, ProjectDetail } from "@/lib/types/litmatrix";
 
@@ -24,6 +25,9 @@ export function AIAnalysisWorkspaceView({ projectId }: { projectId: string }) {
               projectId={projectId}
               active="analysis"
               reviewCount={(suggestions ?? []).filter((suggestion) => suggestion.status === "pending-review").length}
+            />
+            <WorkflowCtaBar
+              items={[{ label: "Review AI suggestions", href: `/projects/${projectId}/review`, primary: true }]}
             />
             <AIAnalysisPanel project={project} suggestions={suggestions ?? []} />
           </section>

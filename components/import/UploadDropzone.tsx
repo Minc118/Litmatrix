@@ -1,4 +1,5 @@
 import { FileUp } from "lucide-react";
+import { InertActionBadge } from "@/components/common/InertActionBadge";
 
 export function UploadDropzone({ compact = false }: { compact?: boolean }) {
   return (
@@ -13,10 +14,14 @@ export function UploadDropzone({ compact = false }: { compact?: boolean }) {
       </div>
       <h3 className="relative mt-5 text-xl font-semibold tracking-tight text-foreground">Upload Paper PDF</h3>
       <p className="relative mt-2 max-w-md text-sm leading-6 text-muted">
-        Drag and drop your PDFs here, or click to browse. Upload behavior is disabled in this demo phase.
+        PDF upload and parsing are not connected yet. Current demo uses seeded OCPM papers.
       </p>
-      <button className="relative mt-6 rounded-sm bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground opacity-70" disabled>
+      <button
+        className="relative mt-6 inline-flex items-center gap-2 rounded-sm border border-border/60 bg-surface px-5 py-2.5 text-sm font-medium text-muted opacity-80"
+        disabled
+      >
         Select PDF
+        <InertActionBadge label="Coming soon" />
       </button>
     </div>
   );

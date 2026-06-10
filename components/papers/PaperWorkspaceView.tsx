@@ -5,6 +5,7 @@ import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
 import { PDFViewerShell } from "@/components/papers/PDFViewerShell";
 import { SuggestionCard } from "@/components/review/SuggestionCard";
 import { StageTabs } from "@/components/analysis/StageTabs";
+import { WorkflowCtaBar } from "@/components/common/WorkflowCtaBar";
 import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
 import type { AISuggestion, Paper } from "@/lib/types/litmatrix";
 
@@ -33,6 +34,14 @@ export function PaperWorkspaceView({
               projectId={projectId}
               active="review"
               reviewCount={suggestionList.filter((suggestion) => suggestion.status === "pending-review").length}
+            />
+            <WorkflowCtaBar
+              items={[
+                { label: "Overview", href: `/projects/${projectId}/overview`, primary: true },
+                { label: "AI analysis", href: `/projects/${projectId}/analysis` },
+                { label: "Review", href: `/projects/${projectId}/review` },
+                { label: "Matrix", href: `/projects/${projectId}/matrix` },
+              ]}
             />
             <div>
               <div className="mb-4 flex items-center justify-between">

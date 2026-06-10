@@ -7,9 +7,16 @@
     "build": "NEXT_SWC_PATH=.next/cache/next-swc next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed:demo": "tsx scripts/seed-demo-data/seed.ts"
   },
   "dependencies": {
+    "@google/genai": "^2.8.0",
+    "@neondatabase/serverless": "^1.1.0",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
     "lucide-react": "1.17.0",
     "next": "15.5.19",
     "react": "19.2.7",
@@ -22,10 +29,12 @@
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "drizzle-kit": "^0.31.10",
     "eslint": "latest",
     "eslint-config-next": "latest",
     "postcss": "latest",
     "tailwindcss": "latest",
+    "tsx": "^4.22.4",
     "typescript": "latest"
   }
 }

@@ -4,10 +4,12 @@ import Link from "next/link";
 import { ProjectSidebar } from "@/components/layout/ProjectSidebar";
 import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
 import { UploadDropzone } from "@/components/import/UploadDropzone";
+import { ImportIntegrationStatus } from "@/components/import/ImportIntegrationStatus";
 import { ProjectHeader } from "@/components/project/ProjectHeader";
 import { LoadingPanel } from "@/components/common/LoadingPanel";
+import { WorkflowCtaBar } from "@/components/common/WorkflowCtaBar";
 import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
-import type { AISuggestion, ExtractionMatrixRow, Paper, ProjectDetail } from "@/lib/types/litmatrix";
+import type { AISuggestion, ExtractionMatrixRow, Paper, ProjectDetail, ProviderStatusResponse } from "@/lib/types/litmatrix";
 
 export function ProjectDashboardView({ projectId }: { projectId: string }) {
   const { data: project, loading } = useLitmatrixResource<ProjectDetail>(`/api/projects/${projectId}`);
@@ -16,6 +18,7 @@ export function ProjectDashboardView({ projectId }: { projectId: string }) {
   const { data: matrixRows } = useLitmatrixResource<ExtractionMatrixRow[]>(
     `/api/projects/${projectId}/extraction-matrix`,
   );
+  const { data: providerStatus } = useLitmatrixResource<ProviderStatusResponse>("/api/providers/status");
 
   const paperList = papers ?? [];
   const suggestionList = suggestions ?? [];
@@ -32,8 +35,19 @@ export function ProjectDashboardView({ projectId }: { projectId: string }) {
           ) : (
             <ProjectHeader project={project} papers={paperList} suggestions={suggestionList} matrixRows={matrix} />
           )}
+          <WorkflowCtaBar
+            items={[
+              { label: "Review papers", href: `/projects/${projectId}/papers`, primary: true },
+              { label: "Open matrix", href: `/projects/${projectId}/matrix` },
+              { label: "Review suggestions", href: `/projects/${projectId}/review` },
+              { label: "Project tools", href: `/projects/${projectId}/tools` },
+            ]}
+          />
           <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-            <UploadDropzone compact />
+            <div className="space-y-4">
+              <UploadDropzone compact />
+              <ImportIntegrationStatus providerStatus={providerStatus} compact />
+            </div>
             <section className="lm-card p-6">
               <p className="lm-label">Research Questions</p>
               <div className="mt-4 space-y-4">
@@ -54,9 +68,9 @@ export function ProjectDashboardView({ projectId }: { projectId: string }) {
               </div>
               <Link
                 href={`/projects/${projectId}/matrix`}
-                className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+                className="rounded-sm border border-[#1f2933] bg-[#1f2933] px-4 py-2 text-sm font-semibold !text-white hover:bg-[#2b3642] [&_span]:!text-white [&_svg]:!text-white"
               >
-                Open Matrix
+                <span className="!text-white">Open Matrix</span>
               </Link>
             </div>
             <div className="mt-5 grid gap-3 md:grid-cols-3">

@@ -16,7 +16,7 @@ import type {
   ReviewDecision,
   ThemeCluster,
   WritingPlan,
-} from "@/lib/types/litmatrix";
+} from "../types/litmatrix";
 
 export const ocpmDemoProjectId = "ocpm-demo";
 

@@ -22,7 +22,7 @@ export function ProjectToolsDashboardView({ projectId }: { projectId: string }) 
               Utilities for assessing quality, exploring citations, comparing evidence, and exporting workspaces.
             </p>
           </div>
-          <ProjectToolsGrid providerStatus={providerStatus} />
+          <ProjectToolsGrid projectId={projectId} providerStatus={providerStatus} />
         </div>
       </section>
     </main>

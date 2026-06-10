@@ -4,11 +4,13 @@ import Link from "next/link";
 import { ProjectSidebar } from "@/components/layout/ProjectSidebar";
 import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
 import { UploadDropzone } from "@/components/import/UploadDropzone";
+import { ImportIntegrationStatus } from "@/components/import/ImportIntegrationStatus";
 import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
-import type { Paper } from "@/lib/types/litmatrix";
+import type { Paper, ProviderStatusResponse } from "@/lib/types/litmatrix";
 
 export function PaperListView({ projectId }: { projectId: string }) {
   const { data: papers } = useLitmatrixResource<Paper[]>(`/api/projects/${projectId}/papers`);
+  const { data: providerStatus } = useLitmatrixResource<ProviderStatusResponse>("/api/providers/status");
 
   return (
     <main className="flex min-h-screen bg-background text-foreground">
@@ -32,7 +34,10 @@ export function PaperListView({ projectId }: { projectId: string }) {
               </Link>
             ))}
           </section>
-          <UploadDropzone compact />
+          <aside className="space-y-4">
+            <UploadDropzone compact />
+            <ImportIntegrationStatus providerStatus={providerStatus} compact />
+          </aside>
         </div>
       </section>
     </main>

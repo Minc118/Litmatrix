@@ -1,7 +1,7 @@
 import { Brain, CheckCircle2, FileText, FileUp } from "lucide-react";
 
 const steps = [
-  { title: "Upload PDF", body: "Add paper metadata or a future PDF parser input.", icon: FileUp },
+  { title: "PDF intake planned", body: "Use seeded demo papers now; future PDF parser input is not connected yet.", icon: FileUp },
   { title: "Generate overview", body: "Create a reviewable paper overview from available evidence.", icon: FileText },
   { title: "Review summary", body: "Decide whether the paper warrants deeper extraction.", icon: CheckCircle2 },
   { title: "Map to matrix", body: "Move confirmed values into the project extraction matrix.", icon: Brain },

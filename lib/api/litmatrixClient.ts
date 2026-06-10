@@ -55,6 +55,29 @@ export async function apiGet<T>(path: string, init: RequestInit = {}): Promise<T
   return payload.data;
 }
 
+async function apiWrite<T>(method: "POST" | "PATCH", path: string, body: unknown): Promise<T> {
+  const response = await fetch(path, {
+    method,
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const payload = (await response.json()) as ApiSuccess<T> | ApiError;
+
+  if (!response.ok || "error" in payload) {
+    const error =
+      "error" in payload
+        ? payload.error
+        : { code: "REQUEST_FAILED", message: "Request failed.", details: {} };
+    throw new LitMatrixApiError(error, response.status);
+  }
+
+  return payload.data;
+}
+
 export const litmatrixClient = {
   listProjects: () => apiGet<Project[]>("/api/projects"),
   getProject: (projectId: string) => apiGet<ProjectDetail>(`/api/projects/${projectId}`),
@@ -80,4 +103,25 @@ export const litmatrixClient = {
   getPresentationPlan: (projectId: string) =>
     apiGet<PresentationPlan | null>(`/api/projects/${projectId}/presentation-plan`),
   getProviderStatus: () => apiGet<ProviderStatusResponse>("/api/providers/status"),
+  createReviewDecision: (input: {
+    suggestionId: string;
+    decision: ReviewDecision["decision"];
+    editedContent?: string | null;
+    reviewerNote?: string | null;
+  }) =>
+    apiWrite<{
+      decision: ReviewDecision;
+      updatedSuggestionId: string;
+      matrixRow?: ExtractionMatrixRow;
+    }>("POST", "/api/review-decisions", input),
+  updateSuggestion: (
+    suggestionId: string,
+    input: Partial<Pick<AISuggestion, "status" | "title" | "content">>,
+  ) => apiWrite<AISuggestion>("PATCH", `/api/ai-suggestions/${suggestionId}`, input),
+  updateExtractionMatrixRow: (rowId: string, confirmedValue: string | null) =>
+    apiWrite<ExtractionMatrixRow>("PATCH", `/api/extraction-matrix/${rowId}`, { confirmedValue }),
+  generateOverview: (projectId: string, paperId: string) =>
+    apiWrite<{ overviewId: string }>("POST", "/api/analysis/overview", { projectId, paperId }),
+  generateExtraction: (projectId: string, paperId: string) =>
+    apiWrite<{ suggestionIds: string[] }>("POST", "/api/analysis/extraction", { projectId, paperId }),
 };

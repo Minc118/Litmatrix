@@ -3,12 +3,15 @@
 import { ProjectSidebar } from "@/components/layout/ProjectSidebar";
 import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
 import { ExtractionMatrixTable } from "@/components/matrix/ExtractionMatrixTable";
+import { WorkflowCtaBar } from "@/components/common/WorkflowCtaBar";
 import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
 import type { ExtractionMatrixRow, Paper } from "@/lib/types/litmatrix";
 
 export function MatrixWorkspaceView({ projectId }: { projectId: string }) {
   const { data: papers } = useLitmatrixResource<Paper[]>(`/api/projects/${projectId}/papers`);
-  const { data: rows } = useLitmatrixResource<ExtractionMatrixRow[]>(`/api/projects/${projectId}/extraction-matrix`);
+  const { data: rows, reload } = useLitmatrixResource<ExtractionMatrixRow[]>(
+    `/api/projects/${projectId}/extraction-matrix`,
+  );
 
   return (
     <main className="flex min-h-screen bg-background text-foreground">
@@ -23,7 +26,14 @@ export function MatrixWorkspaceView({ projectId }: { projectId: string }) {
               Confirmed extraction values are the only inputs eligible for final synthesis and gap discovery.
             </p>
           </div>
-          <ExtractionMatrixTable rows={rows ?? []} papers={papers ?? []} />
+          <WorkflowCtaBar
+            items={[
+              { label: "Theme clustering", href: `/projects/${projectId}/themes`, primary: true },
+              { label: "Gap map", href: `/projects/${projectId}/gaps` },
+              { label: "Arguments", href: `/projects/${projectId}/arguments` },
+            ]}
+          />
+          <ExtractionMatrixTable rows={rows ?? []} papers={papers ?? []} onChanged={reload} />
         </div>
       </section>
     </main>

@@ -2,13 +2,13 @@ import { Brain, FileUp, Rows3, ScrollText } from "lucide-react";
 
 const features = [
   {
-    title: "Upload academic PDFs",
-    body: "Import papers into a focused workspace while preserving the path toward structured extraction.",
+    title: "Plan PDF imports",
+    body: "The demo uses seeded OCPM papers while PDF upload and parsing remain a planned integration.",
     icon: FileUp,
   },
   {
     title: "Generate paper overviews",
-    body: "Grasp research objective, method, findings, limitations, and relevance before deep analysis.",
+    body: "Use demo overviews now; real Gemini overview generation requires database migration and provider configuration.",
     icon: ScrollText,
   },
   {

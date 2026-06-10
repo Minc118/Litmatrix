@@ -3,6 +3,7 @@
 import { Download } from "lucide-react";
 import { ProjectSidebar } from "@/components/layout/ProjectSidebar";
 import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
+import { InertActionBadge } from "@/components/common/InertActionBadge";
 import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
 import type { ExtractionMatrixRow } from "@/lib/types/litmatrix";
 
@@ -32,8 +33,9 @@ export function ExportWorkspaceView({ projectId }: { projectId: string }) {
                 <p className="mt-2 text-sm leading-6 text-muted">
                   Prepared export format for {rows?.length ?? 0} matrix rows.
                 </p>
-                <button className="mt-5 rounded-sm border border-border bg-surface px-4 py-2 text-sm text-muted" disabled>
+                <button className="mt-5 inline-flex items-center gap-2 rounded-sm border border-border bg-surface px-4 py-2 text-sm text-muted" disabled>
                   Export {format}
+                  <InertActionBadge label="Coming soon" />
                 </button>
               </article>
             ))}

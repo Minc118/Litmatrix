@@ -7,6 +7,7 @@ type ResourceState<T> = {
   data: T | null;
   error: string | null;
   loading: boolean;
+  reload: () => void;
 };
 
 export function useLitmatrixResource<T>(endpoint: string): ResourceState<T> {
@@ -14,7 +15,9 @@ export function useLitmatrixResource<T>(endpoint: string): ResourceState<T> {
     data: null,
     error: null,
     loading: true,
+    reload: () => undefined,
   });
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -22,7 +25,7 @@ export function useLitmatrixResource<T>(endpoint: string): ResourceState<T> {
     apiGet<T>(endpoint)
       .then((data) => {
         if (active) {
-          setState({ data, error: null, loading: false });
+          setState((current) => ({ ...current, data, error: null, loading: false }));
         }
       })
       .catch((error: unknown) => {
@@ -35,13 +38,16 @@ export function useLitmatrixResource<T>(endpoint: string): ResourceState<T> {
             ? `${error.code}: ${error.message}`
             : "Unable to load LitMatrix data.";
 
-        setState({ data: null, error: message, loading: false });
+        setState((current) => ({ ...current, data: null, error: message, loading: false }));
       });
 
     return () => {
       active = false;
     };
-  }, [endpoint]);
+  }, [endpoint, reloadToken]);
 
-  return state;
+  return {
+    ...state,
+    reload: () => setReloadToken((value) => value + 1),
+  };
 }
