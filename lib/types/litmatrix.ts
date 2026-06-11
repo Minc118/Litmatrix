@@ -274,3 +274,32 @@ export type ProviderStatusResponse = {
   importers: ProviderCapability[];
   generatedAt: string;
 };
+
+export interface ExtractionField {
+  key: string;
+  label: string;
+  required: boolean;
+  description?: string;
+}
+
+export interface AnalysisCommand {
+  id: string;
+  label: string;
+  purpose: string;
+  inputRecordTypes: string[];
+  outputResultType: string;
+  evidenceRequirements: string;
+  promptTemplate: string;
+}
+
+export interface ProjectContract {
+  projectId: string;
+  skillVersion: string;
+  contractVersion: string;
+  extractionSchemaVersion: string;
+  commandPackVersion: string;
+  researchQuestionIds: string[];
+  extractionFields: ExtractionField[];
+  commandPack: AnalysisCommand[];
+}
+

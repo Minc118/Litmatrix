@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { withDatabaseReadFallback } from "@/lib/server/db/fallback";
 import { keywordGroups, projects, researchQuestions } from "@/lib/server/db/schema";
 import { toKeywordGroup, toProject, toResearchQuestion } from "@/lib/server/db/mappers";
+import { getOptionalDb } from "@/lib/server/db/client";
 import {
   ocpmDemoKeywordGroups,
   ocpmDemoProject,
@@ -12,17 +13,47 @@ import {
 } from "@/lib/demo/ocpm-demo-data";
 import type { Project, ProjectDetail } from "@/lib/types/litmatrix";
 
+const globalForProjects = globalThis as unknown as {
+  inMemoryProjects?: Map<string, ProjectDetail>;
+};
+
+const inMemoryProjects = globalForProjects.inMemoryProjects ?? new Map<string, ProjectDetail>();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForProjects.inMemoryProjects = inMemoryProjects;
+}
+
 export async function listProjects(): Promise<Project[]> {
-  return withDatabaseReadFallback(
+  const dbProjects = await withDatabaseReadFallback(
     async (db) => {
       const rows = await db.select().from(projects);
       return rows.map(toProject);
     },
     () => [ocpmDemoProject],
   );
+
+  const all = [...dbProjects];
+  for (const p of inMemoryProjects.values()) {
+    if (!all.some((x) => x.id === p.id)) {
+      all.push({
+        id: p.id,
+        title: p.title,
+        description: p.description,
+        status: p.status,
+        demo: p.demo,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+      });
+    }
+  }
+  return all;
 }
 
 export async function getProjectById(projectId: string): Promise<ProjectDetail | null> {
+  console.log(`[REPOSITORY] getProjectById lookup: ${projectId}, stored keys:`, Array.from(inMemoryProjects.keys()));
+  if (inMemoryProjects.has(projectId)) {
+    return inMemoryProjects.get(projectId)!;
+  }
   return withDatabaseReadFallback(
     async (db) => {
       const [projectRow] = await db.select().from(projects).where(eq(projects.id, projectId));
@@ -55,3 +86,59 @@ export async function getProjectById(projectId: string): Promise<ProjectDetail |
     },
   );
 }
+
+export async function createProject(
+  projectData: { id: string; title: string; description?: string | null; demo?: boolean },
+  rqs: Array<{ text: string }>
+): Promise<ProjectDetail> {
+  const now = new Date().toISOString();
+  const projectDetail: ProjectDetail = {
+    id: projectData.id,
+    title: projectData.title,
+    description: projectData.description || null,
+    status: "active",
+    demo: projectData.demo ?? false,
+    createdAt: now,
+    updatedAt: now,
+    researchQuestions: rqs.map((rq, index) => ({
+      id: `rq-${projectData.id}-${index + 1}`,
+      projectId: projectData.id,
+      text: rq.text,
+      rationale: null,
+      createdAt: now,
+      updatedAt: now,
+    })),
+    keywordGroups: [],
+  };
+
+  inMemoryProjects.set(projectData.id, projectDetail);
+  console.log(`[REPOSITORY] createProject saved: ${projectData.id}, stored keys:`, Array.from(inMemoryProjects.keys()));
+
+  try {
+    const db = getOptionalDb();
+    if (db) {
+      await db.insert(projects).values({
+        id: projectData.id,
+        title: projectData.title,
+        description: projectData.description || null,
+        status: "active",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      for (const rq of projectDetail.researchQuestions) {
+        await db.insert(researchQuestions).values({
+          id: rq.id,
+          projectId: rq.projectId,
+          text: rq.text,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Failed to persist project in DB fallback, using in-memory only:", err);
+  }
+
+  return projectDetail;
+}
+

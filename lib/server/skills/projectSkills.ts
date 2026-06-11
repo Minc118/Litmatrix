@@ -115,7 +115,28 @@ const OCPM_COMMANDS: AnalysisCommand[] = [
   },
 ];
 
+const globalForSkills = globalThis as unknown as {
+  customSkills?: Map<string, string>;
+  customContracts?: Map<string, ProjectContract>;
+};
+
+const customSkills = globalForSkills.customSkills ?? new Map<string, string>();
+const customContracts = globalForSkills.customContracts ?? new Map<string, ProjectContract>();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForSkills.customSkills = customSkills;
+  globalForSkills.customContracts = customContracts;
+}
+
+export function registerProjectSkill(projectId: string, markdown: string, contract: ProjectContract): void {
+  customSkills.set(projectId, markdown);
+  customContracts.set(projectId, contract);
+}
+
 export function getProjectSkillMarkdown(projectId: string): string {
+  if (customSkills.has(projectId)) {
+    return customSkills.get(projectId)!;
+  }
   const isOcpm = projectId === "ocpm-demo";
   const topic = isOcpm ? "Object-Centric Process Mining" : "Literature Review Topic";
   
@@ -147,6 +168,9 @@ ${(isOcpm ? OCPM_COMMANDS : DEFAULT_COMMANDS)
 }
 
 export function getProjectContract(projectId: string): ProjectContract {
+  if (customContracts.has(projectId)) {
+    return customContracts.get(projectId)!;
+  }
   const isOcpm = projectId === "ocpm-demo";
   return {
     projectId,
@@ -159,3 +183,4 @@ export function getProjectContract(projectId: string): ProjectContract {
     commandPack: isOcpm ? OCPM_COMMANDS : DEFAULT_COMMANDS,
   };
 }
+
