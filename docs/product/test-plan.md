@@ -37,3 +37,33 @@ Once implemented, we will verify the following flows in the local browser:
 * **Import Console**:
   * Paste an invalid payload and check validation error listing.
   * Dry-run/import a valid payload and verify records enter as `pending-review`.
+
+---
+
+## 3. End-to-End (E2E) UI Tests
+
+We have added a Playwright-based E2E acceptance test suite located at `tests/e2e/litmatrix-p0.spec.ts`.
+
+### Running E2E Tests
+To run the automated visual/UI E2E test suite locally:
+
+1. **Install Browser Binaries (Chromium)** (Required once):
+   ```bash
+   npx playwright install chromium
+   ```
+
+2. **Execute Tests**:
+   ```bash
+   npx playwright test
+   ```
+
+*Note: The test runner automatically boots the Next.js development server on port 3000 with an empty `DATABASE_URL` env variable to run the application in isolated mock-only mode, avoiding network/database connection overhead.*
+
+### Scenarios Covered
+1. **Skill & Contract Page**: Loads, toggles tabs (Skill Markdown, Research Questions, Extraction Schema, Command Pack), and validates download links.
+2. **Import Console**: Fills Paste JSON area with a valid OCPM payload, executes schema validation successfully, and runs a dry-run checking that preview cards display correct entity counts.
+3. **Overview & Screening Page**: Loads, and checks the presence of core Screening Decision Gate buttons (Mark as Core Paper, Mark as Background, Skip/Exclude).
+4. **Workspace Review UI**: Loads, and checks for paper switching combobox dropdown and batch save buttons.
+5. **Extraction Matrix**: Loads, expands details, checks checkbox selection on grid rows, and tests inspections.
+6. **Export Workspace Page**: Loads, and confirms JSON, CSV, and Markdown export download options.
+

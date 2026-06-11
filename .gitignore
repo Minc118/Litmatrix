@@ -16,3 +16,7 @@ dist/
 # Research input exports
 research-input/
 research-output/
+
+# Test outputs
+test-results/
+playwright-report/
