@@ -1,0 +1,70 @@
+{
+  "projectId": "ocpm-demo",
+  "skillVersion": "1.0.0",
+  "contractVersion": "1.0.0",
+  "papers": [
+    {
+      "id": "van2019object",
+      "projectId": "ocpm-demo",
+      "title": "Object-Centric Process Mining: Dealing with Divergence and Convergence in Event Data",
+      "authors": ["Wil M. P. van der Aalst"],
+      "year": 2019
+    }
+  ],
+  "extractionMatrixRows": [
+    {
+      "id": "matrix-van2019object-rq1",
+      "projectId": "ocpm-demo",
+      "paperId": "van2019object",
+      "fieldKey": "researchProblem",
+      "fieldLabel": "Research Problem",
+      "suggestedValue": "The limitation of flattening events.",
+      "status": "pending-review",
+      "evidenceLevel": "full-text",
+      "confidence": "high",
+      "evidence": [
+        {
+          "paperId": "van2019object",
+          "sourceField": "fullText",
+          "quote": "convergence and divergence"
+        }
+      ]
+    },
+    {
+      "id": "matrix-van2019object-rq2",
+      "projectId": "ocpm-demo",
+      "paperId": "van2019object",
+      "fieldKey": "method",
+      "fieldLabel": "Method",
+      "suggestedValue": "Directly-follows multigraphs.",
+      "status": "pending-review",
+      "evidenceLevel": "full-text",
+      "confidence": "high",
+      "evidence": [
+        {
+          "paperId": "van2019object",
+          "sourceField": "fullText",
+          "quote": "directly-follows multigraph"
+        }
+      ]
+    },
+    {
+      "id": "matrix-van2019object-rq3",
+      "projectId": "ocpm-demo",
+      "paperId": "van2019object",
+      "fieldKey": "findings",
+      "fieldLabel": "Findings",
+      "suggestedValue": "Avoiding duplication of events.",
+      "status": "pending-review",
+      "evidenceLevel": "full-text",
+      "confidence": "high",
+      "evidence": [
+        {
+          "paperId": "van2019object",
+          "sourceField": "fullText",
+          "quote": "without duplicating events"
+        }
+      ]
+    }
+  ]
+}

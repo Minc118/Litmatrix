@@ -1,6 +1,9 @@
 import "server-only";
 
-import { importAntigravityJsonPlaceholder } from "@/lib/server/importers/antigravityJsonImporter";
+import {
+  importAntigravityJson as importAntigravityJsonReal,
+  type ImporterResult,
+} from "@/lib/server/importers/antigravityJsonImporter";
 import { importManualNotesPlaceholder } from "@/lib/server/importers/manualNotesImporter";
 import { importNotebookLmNotesPlaceholder } from "@/lib/server/importers/notebookLmNotesImporter";
 import * as importJobRepository from "@/lib/server/repositories/importJobRepository";
@@ -9,8 +12,8 @@ export async function listProjectImportJobs(projectId: string) {
   return importJobRepository.listImportJobs(projectId);
 }
 
-export async function importAntigravityJson() {
-  return importAntigravityJsonPlaceholder();
+export async function importAntigravityJson(payload: unknown, dryRun?: boolean): Promise<ImporterResult> {
+  return importAntigravityJsonReal(payload, dryRun);
 }
 
 export async function importManualNotes() {

@@ -1,0 +1,80 @@
+{
+  "projectId": "ocpm-project",
+  "papers": [
+    {
+      "id": "paper-ocpm-sample-1",
+      "projectId": "ocpm-project",
+      "title": "A Systematic Survey on Optimal Construction Planning Methods (OCPM)",
+      "authors": [
+        "Sarah Jenkins",
+        "David Miller"
+      ],
+      "year": 2024,
+      "venue": "International Journal of Project Management",
+      "doi": "10.1016/j.ijproman.2024.01.001",
+      "url": "https://example.com/ocpm-survey.pdf",
+      "abstract": "This survey paper presents a comprehensive review of optimal construction planning methods, evaluating performance and dataset availability."
+    }
+  ],
+  "paperOverviews": [
+    {
+      "id": "overview-ocpm-sample-1",
+      "projectId": "ocpm-project",
+      "paperId": "paper-ocpm-sample-1",
+      "problem": "Unpredictable delays in large-scale construction planning.",
+      "objective": "Survey existing optimization techniques to mitigate delay risks.",
+      "method": "Systematic literature review (SLR) covering papers from 2010 to 2023.",
+      "dataset": "A curated dataset of 45 primary planning studies.",
+      "findings": "Hybrid mathematical models reduce planned variance by up to 15%.",
+      "limitations": "Does not address real-time rescheduling in response to unforeseen weather delays.",
+      "evidence": [
+        {
+          "paperId": "paper-ocpm-sample-1",
+          "sourceField": "abstract",
+          "note": "Evaluated on 45 primary planning studies in abstract."
+        }
+      ],
+      "evidenceLevel": "abstract-based",
+      "confidence": "medium"
+    }
+  ],
+  "aiSuggestions": [
+    {
+      "id": "suggestion-ocpm-sample-1",
+      "projectId": "ocpm-project",
+      "paperId": "paper-ocpm-sample-1",
+      "suggestionType": "extraction-field",
+      "title": "Core Methodology",
+      "content": "Systematic literature review (SLR)",
+      "targetField": "method",
+      "evidence": [
+        {
+          "paperId": "paper-ocpm-sample-1",
+          "sourceField": "abstract",
+          "note": "Mentioned as SLR in abstract."
+        }
+      ],
+      "evidenceLevel": "abstract-based",
+      "confidence": "medium"
+    }
+  ],
+  "extractionMatrixRows": [
+    {
+      "id": "matrix-ocpm-sample-1",
+      "projectId": "ocpm-project",
+      "paperId": "paper-ocpm-sample-1",
+      "fieldKey": "method",
+      "fieldLabel": "Methodology Used",
+      "suggestedValue": "Systematic literature review (SLR)",
+      "evidence": [
+        {
+          "paperId": "paper-ocpm-sample-1",
+          "sourceField": "abstract",
+          "note": "Extracted from paper abstract."
+        }
+      ],
+      "evidenceLevel": "abstract-based",
+      "confidence": "medium"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookMarked, Columns3, Download, GitCompare, Lightbulb, ShieldCheck } from "lucide-react";
+import { BookMarked, Columns3, Download, GitCompare, Lightbulb, ShieldCheck, FileJson } from "lucide-react";
 import { InertActionBadge } from "@/components/common/InertActionBadge";
 import type { ProviderStatusResponse } from "@/lib/types/litmatrix";
 
@@ -39,6 +39,12 @@ const tools = [
     body: "Cluster confirmed values into themes and synthesis candidates.",
     icon: Columns3,
     href: "/themes",
+  },
+  {
+    title: "Import Console",
+    body: "Validate, dry-run, and import Antigravity JSON payloads directly into this project workspace.",
+    icon: FileJson,
+    href: "/tools/import",
   },
 ];
 

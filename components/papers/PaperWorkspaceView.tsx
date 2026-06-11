@@ -17,7 +17,7 @@ export function PaperWorkspaceView({
   paperId: string;
 }) {
   const { data: papers } = useLitmatrixResource<Paper[]>(`/api/projects/${projectId}/papers`);
-  const { data: suggestions } = useLitmatrixResource<AISuggestion[]>(
+  const { data: suggestions, reload: reloadSuggestions } = useLitmatrixResource<AISuggestion[]>(
     `/api/projects/${projectId}/suggestions?paperId=${paperId}`,
   );
   const paper = (papers ?? []).find((item) => item.id === paperId) ?? null;
@@ -55,7 +55,12 @@ export function PaperWorkspaceView({
               </div>
               <div className="space-y-4">
                 {suggestionList.map((suggestion) => (
-                  <SuggestionCard key={suggestion.id} suggestion={suggestion} paper={paper ?? undefined} />
+                  <SuggestionCard
+                    key={suggestion.id}
+                    suggestion={suggestion}
+                    paper={paper ?? undefined}
+                    onChanged={reloadSuggestions}
+                  />
                 ))}
               </div>
             </div>

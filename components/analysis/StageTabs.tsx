@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 const stages = [
   { label: "Overview", href: "/overview" },
@@ -15,14 +18,18 @@ export function StageTabs({
   active: "overview" | "analysis" | "review";
   reviewCount?: number;
 }) {
+  const searchParams = useSearchParams();
+  const paperId = searchParams?.get("paperId");
+
   return (
     <div className="flex gap-3 border-b border-border/50">
       {stages.map((stage) => {
         const key = stage.label === "Overview" ? "overview" : stage.label === "AI Analysis" ? "analysis" : "review";
+        const href = `/projects/${projectId}${stage.href}${paperId ? `?paperId=${paperId}` : ""}`;
         return (
           <Link
             key={stage.label}
-            href={`/projects/${projectId}${stage.href}`}
+            href={href}
             className={`mb-[-1px] flex items-center gap-2 rounded-t-sm border border-b-2 px-3 py-2 text-sm font-semibold transition-colors ${
               active === key
                 ? "border-border border-b-[#1f2933] bg-surface text-foreground shadow-sm"
