@@ -170,3 +170,55 @@ export async function insertAISuggestions(suggestions: AISuggestion[]): Promise<
 
   return { ok: true, data: rows.map(toAISuggestion) };
 }
+
+export async function upsertAISuggestions(suggestions: AISuggestion[]): Promise<MutationResult<AISuggestion[]>> {
+  const state = getMutationDbState();
+  if (!state.ok) {
+    return mutationUnavailableResult(state);
+  }
+
+  if (suggestions.length === 0) {
+    return { ok: true, data: [] };
+  }
+
+  const results: AISuggestion[] = [];
+  for (const suggestion of suggestions) {
+    const [row] = await state.db
+      .insert(aiSuggestions)
+      .values({
+        id: suggestion.id,
+        projectId: suggestion.projectId,
+        paperId: suggestion.paperId ?? null,
+        analysisSource: suggestion.analysisSource,
+        evidenceLevel: suggestion.evidenceLevel,
+        status: suggestion.status,
+        confidence: suggestion.confidence,
+        suggestionType: suggestion.suggestionType,
+        title: suggestion.title,
+        content: suggestion.content,
+        targetField: suggestion.targetField ?? null,
+        evidence: suggestion.evidence,
+        createdAt: new Date(suggestion.createdAt),
+        updatedAt: new Date(suggestion.updatedAt),
+      })
+      .onConflictDoUpdate({
+        target: aiSuggestions.id,
+        set: {
+          title: suggestion.title,
+          content: suggestion.content,
+          targetField: suggestion.targetField ?? null,
+          evidence: suggestion.evidence,
+          confidence: suggestion.confidence,
+          evidenceLevel: suggestion.evidenceLevel,
+          status: suggestion.status,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    if (row) {
+      results.push(toAISuggestion(row));
+    }
+  }
+
+  return { ok: true, data: results };
+}
