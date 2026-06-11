@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams, useRouter } from "next/navigation";
 import { ProjectSidebar } from "@/components/layout/ProjectSidebar";
 import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
 import { StageTabs } from "@/components/analysis/StageTabs";
@@ -11,6 +12,10 @@ import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
 import type { AISuggestion, Paper, ReviewDecision } from "@/lib/types/litmatrix";
 
 export function ReviewWorkspaceView({ projectId }: { projectId: string }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const activePaperId = searchParams ? searchParams.get("paperId") || "" : "";
+
   const { data: papers } = useLitmatrixResource<Paper[]>(`/api/projects/${projectId}/papers`);
   const { data: suggestions, reload: reloadSuggestions } = useLitmatrixResource<AISuggestion[]>(
     `/api/projects/${projectId}/suggestions`,
@@ -18,8 +23,18 @@ export function ReviewWorkspaceView({ projectId }: { projectId: string }) {
   const { data: decisions, reload: reloadDecisions } = useLitmatrixResource<ReviewDecision[]>(
     `/api/projects/${projectId}/review-decisions`,
   );
-  const paperById = new Map((papers ?? []).map((paper) => [paper.id, paper]));
-  const suggestionList = suggestions ?? [];
+
+  const paperList = papers ?? [];
+  const paper = paperList.find((p) => p.id === activePaperId) ?? paperList[0] ?? null;
+  const paperById = new Map(paperList.map((p) => [p.id, p]));
+
+  // Filter suggestions by paperId if specified in URL
+  const suggestionList = (suggestions ?? []).filter((s) => !activePaperId || s.paperId === activePaperId);
+
+  const handlePaperChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newId = event.target.value;
+    router.push(`/projects/${projectId}/review?paperId=${newId}`);
+  };
 
   return (
     <main className="flex min-h-screen bg-background text-foreground">
@@ -28,11 +43,30 @@ export function ReviewWorkspaceView({ projectId }: { projectId: string }) {
         <WorkspaceTopBar title="Review AI Suggestions" context="Academic Workspace" actionLabel="Save" />
         <div className="grid gap-6 p-6 xl:grid-cols-[minmax(0,1fr)_460px]">
           <section className="space-y-6">
-            <StageTabs
-              projectId={projectId}
-              active="review"
-              reviewCount={suggestionList.filter((suggestion) => suggestion.status === "pending-review").length}
-            />
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/50 pb-3">
+              <StageTabs
+                projectId={projectId}
+                active="review"
+                reviewCount={(suggestions ?? []).filter((suggestion) => suggestion.status === "pending-review").length}
+              />
+              {paperList.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted">Active Paper:</span>
+                  <select
+                    value={paper?.id || ""}
+                    onChange={handlePaperChange}
+                    className="rounded border border-border/60 bg-surface px-3 py-1.5 text-sm font-semibold outline-none focus:border-foreground"
+                  >
+                    {paperList.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.year ? `[${p.year}] ` : ""}{p.title.length > 40 ? p.title.substring(0, 40) + "..." : p.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
             <WorkflowCtaBar items={[{ label: "Open extraction matrix", href: `/projects/${projectId}/matrix`, primary: true }]} />
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
@@ -44,17 +78,23 @@ export function ReviewWorkspaceView({ projectId }: { projectId: string }) {
               </span>
             </div>
             <div className="space-y-4">
-              {suggestionList.map((suggestion) => (
-                <SuggestionCard
-                  key={suggestion.id}
-                  suggestion={suggestion}
-                  paper={suggestion.paperId ? paperById.get(suggestion.paperId) : undefined}
-                  onChanged={() => {
-                    reloadSuggestions();
-                    reloadDecisions();
-                  }}
-                />
-              ))}
+              {suggestionList.length === 0 ? (
+                <div className="rounded border border-border/40 p-8 text-center bg-surface-muted">
+                  <p className="text-sm text-muted font-medium">No pending suggestions for this paper.</p>
+                </div>
+              ) : (
+                suggestionList.map((suggestion) => (
+                  <SuggestionCard
+                    key={suggestion.id}
+                    suggestion={suggestion}
+                    paper={suggestion.paperId ? paperById.get(suggestion.paperId) : undefined}
+                    onChanged={() => {
+                      reloadSuggestions();
+                      reloadDecisions();
+                    }}
+                  />
+                ))
+              )}
             </div>
             <div className="sticky bottom-0 rounded border border-border/50 bg-[#fdfdfd]/90 p-4 backdrop-blur">
               <button
@@ -66,7 +106,7 @@ export function ReviewWorkspaceView({ projectId }: { projectId: string }) {
               </button>
             </div>
           </section>
-          <PDFViewerShell paper={(papers ?? [])[0] ?? null} />
+          <PDFViewerShell paper={paper} />
         </div>
       </section>
     </main>

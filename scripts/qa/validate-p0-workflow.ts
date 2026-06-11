@@ -61,9 +61,9 @@ async function runTests() {
     };
     const result = await importAntigravityJson(versionMismatchPayload, true);
     assert(
-      !result.ok &&
+      Boolean(!result.ok &&
         result.code === "IMPORT_VALIDATION_FAILED" &&
-        result.validationErrors?.some((e) => e.path === "skillVersion"),
+        result.validationErrors?.some((e) => e.path === "skillVersion")),
       "Catches skillVersion mismatch"
     );
   } catch (err) {
@@ -86,9 +86,9 @@ async function runTests() {
     };
     const result = await importAntigravityJson(missingFieldsPayload, true);
     assert(
-      !result.ok &&
+      Boolean(!result.ok &&
         result.code === "IMPORT_VALIDATION_FAILED" &&
-        result.validationErrors?.some((e) => e.message.includes("researchProblem")),
+        result.validationErrors?.some((e) => e.message.includes("researchProblem"))),
       "Catches missing required researchProblem field"
     );
   } catch (err) {
@@ -143,9 +143,9 @@ async function runTests() {
     };
     const result = await importAntigravityJson(unknownFieldPayload, true);
     assert(
-      !result.ok &&
+      Boolean(!result.ok &&
         result.code === "IMPORT_VALIDATION_FAILED" &&
-        result.validationErrors?.some((e) => e.path?.includes("fieldKey")),
+        result.validationErrors?.some((e) => e.path?.includes("fieldKey"))),
       "Catches unknown extraction field key"
     );
   } catch (err) {
