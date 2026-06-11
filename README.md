@@ -1,43 +1,72 @@
 # LitMatrix
 
-LitMatrix is an AI-assisted systematic literature review and survey-paper workspace. It is intended to help researchers move from paper import and paper overview through AI-assisted analysis, suggestion review, extraction matrices, multi-paper synthesis, theme clustering, research gap discovery, argument candidates, innovation opportunities, writing plans, and presentation plans.
+LitMatrix is an AI-assisted systematic literature review and survey-paper workspace. It helps researchers move from project creation and paper import through screening, human-in-the-loop review, schema-driven extraction matrices, and evidence synthesis exports.
 
-## Architecture Status
+---
 
-This repository currently contains architecture and agent guidance for the planned full-stack application. Feature implementation, real API connections, database migrations, and deployments are intentionally out of scope for the current phase.
+## 1. Project Status: Full-Flow MVP
 
-See:
+LitMatrix now contains a working end-to-end MVP implementation covering the following lifecycle states:
 
-- `docs/architecture.md`
-- `docs/frontend-architecture.md`
-- `docs/backend-architecture.md`
-- `docs/data-contract.md`
-- `docs/api-contract.md`
-- `docs/provider-importer-contract.md`
-- `skills/litmatrix-slr/SKILL.md`
+1. **New Analysis Wizard (`/new`)**: Topic-agnostic wizard to register details, custom research questions, and custom extraction schema columns.
+2. **Project Skill & Contract**: Dynamically generated skill markdown and JSON contracts served on `/projects/[projectId]/skill`.
+3. **PDF Ingestion**: Drag-and-drop or select PDF paper files to ingest basic metadata.
+4. **Zotero RDF Import**: Ingests Zotero RDF XML catalog exports directly into the project library.
+5. **Paper Inbox & Screening**: Redesigned screening dashboard to track source type, overview status, and register screening decisions.
+6. **Paper Overview**: Decision Gate interface to route papers (Core, Background, Skip/Exclude).
+7. **Extraction Matrix**: Dynamic schema-driven grid with detailed cell expansion showing exact evidence quotes and locators.
+8. **Matrix Export**: Export full or selected matrix records into CSV, Markdown, or JSON bundles.
+9. **Import Console**: Pasteurization interface validating external analysis JSON bundles against the project contract.
 
-## Modes
+---
 
-Demo mode should allow the UI to show mock or seed data without external services. The frontend should still read data through backend API routes so demo and production share the same contracts.
+## 2. Technical Stack
+* **Framework**: Next.js (App Router, React 19)
+* **Styling**: Vanilla CSS (Tailwind CSS skeleton utility compatibility)
+* **Database Client**: Drizzle ORM / Neon Serverless (postgres)
+* **E2E Testing**: Playwright
 
-Online analysis mode is planned to use backend API routes and server-side providers. The frontend must not call Gemini, Zotero, Neon, Antigravity, or other secret-based services directly.
+---
 
-Local Antigravity mode is planned as an importer workflow. Antigravity can produce local JSON output, and a later backend importer or local sync script can validate and normalize that output into the Analysis Store.
+## 3. How to Run Locally
 
-## Planned Integrations
+### 1. Install Dependencies
+```bash
+npm install
+```
 
-LitMatrix is planned for Vercel deployment with a Neon-backed Analysis Store. Gemini is planned as an optional server-side AI provider. Zotero Local API and Zotero Web API are planned as optional metadata import providers. Antigravity JSON import is planned for local advanced analysis output.
+### 2. Start Local Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-No real provider connections, database migrations, or deployment commands are included in this architecture phase.
+---
 
-## Implementation Skeleton
+## 4. How to Test and Validate
 
-The repository now uses a manual Next.js App Router, TypeScript, and Tailwind CSS scaffold. Current routes are demo-backed placeholders that read normalized OCPM data through backend API routes.
+Validate that the application is fully type-safe, lint-compliant, builds cleanly, and passes all E2E browser tests:
 
-The skeleton keeps these boundaries:
+```bash
+# 1. Typecheck
+npm run typecheck
 
-- Frontend pages and components fetch `/api/*` routes only.
-- Backend API routes call server services.
-- Server services call repositories, providers, importers, validators, and config modules.
-- Demo data lives in `lib/demo/ocpm-demo-data.ts`.
-- Provider and importer modules are placeholders and do not call external services.
+# 2. Lint
+npm run lint
+
+# 3. Production Build
+npm run build
+
+# 4. Playwright E2E Tests
+npx playwright test
+```
+
+---
+
+## 5. Current Implementation Limitations
+* **PDF full-text extraction** is not implemented yet. Ingested papers are marked as `Metadata-only` with text-extraction disclaimers.
+* **Deep Extraction** is not automatically performed (it does not invoke any server-side extractor or mock generator to prevent data fabrication).
+* **Zotero Local API** is a planned/unavailable integration, clearly badged as such in the UI.
+* **In-Memory Fallback**: Dynamic projects, skills, and contracts use process-level in-memory storage when no postgres `DATABASE_URL` is configured, which resets upon server restart.
+* **Local Storage Screening**: Screening decisions persist in the browser's `localStorage` (per project ID) to provide a persistent local demo experience.
+* **AI Provider Connection**: No external AI provider (such as Gemini or other secret-based services) is actively called.

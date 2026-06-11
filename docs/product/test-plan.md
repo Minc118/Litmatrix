@@ -1,69 +1,72 @@
-# LitMatrix P0 Test Plan
+# LitMatrix Test Plan
 
-This document outlines the testing and validation strategy for the LitMatrix P0 implementation.
+This document outlines the testing and validation strategy for the LitMatrix workspace, covering both the P0 foundational features and the full-flow MVP literature review lifecycle.
 
 ---
 
-## 1. Automated Validation Tests
+## 1. Automated Validation Tests (Unit & Integration)
 
-We will create a QA script under `scripts/qa/validate-p0-workflow.ts` to test backend behaviors and import validation.
+We use a backend QA validation script at `scripts/qa/validate-p0-workflow.ts` to test schema validation, payload contract enforcement, version compatibility checking, and external analysis ingestion.
 
 ### Test Scenarios Covered
-1. **Contract Generation**: Verify that project contract returns a valid JSON schema representing the project settings.
-2. **Project ID Validation**: Import fails when the payload's `projectId` does not match the workspace's `projectId`.
-3. **Version Validation**: Warning or mismatch triggers if `skillVersion` or `contractVersion` are outdated.
+1. **Contract Generation**: Verifies that project contract returns a valid JSON schema representing the project settings.
+2. **Project ID Validation**: Validates that import fails when the payload's `projectId` does not match the workspace's `projectId`.
+3. **Version Validation**: Validates that a mismatch or warning triggers if `skillVersion` or `contractVersion` is outdated.
 4. **Field Keys & Schema Matching**:
    * Rejects/blocks import of records with unknown fields or missing required fields.
    * Gracefully allows missing optional fields, labeling them `Not specified in the provided text.`.
-5. **Evidence Level Validation**: Check that suggestions demote confidence or evidence levels if evidence quotes or locator fields are missing.
-6. **Matrix Export Preserves Evidence**: Exported matrix JSON includes exact quote, section, and confidence metadata.
-7. **External Result Import**: Verifies that importing external analysis payloads enters suggestions with `pending-review` status and maps themes/gaps to their respective db tables upon acceptance.
+5. **Evidence Level Validation**: Confirms that missing evidence quotes or locator fields demotes suggestions to pending review.
+6. **Matrix Export Preserves Evidence**: Verifies that exported matrix JSON includes exact quote, section, and confidence metadata.
+7. **External Result Import**: Verifies that external analysis suggestion payloads map to respective DB tables (theme, gap, etc.) upon review acceptance.
 
 ---
 
-## 2. Manual UI Walkthrough Verification
+## 2. End-to-End (E2E) UI Tests
 
-Once implemented, we will verify the following flows in the local browser:
-* **Workspace Context**: Selecting different papers updates overview panel, analysis panel, and PDF viewer shell instantly. Changing views preserves `paperId` context.
-* **Project Skill Page**:
-  * Navigate to the Project Skill page.
-  * Edit the markdown and schemas.
-  * Download the config bundle (`project-skill.md`, `project-contract.json`).
-* **Extraction Matrix**:
-  * Verify matrix columns match the schema.
-  * Expand cell detail to check quote, confidence, and status.
-  * Check/uncheck row selection checkboxes.
-  * Export selected records or full matrix.
-* **Import Console**:
-  * Paste an invalid payload and check validation error listing.
-  * Dry-run/import a valid payload and verify records enter as `pending-review`.
+We use Playwright to perform automated E2E browser tests under `tests/e2e/`.
+
+### 2.1 P0 Workspace Test Suite (`tests/e2e/litmatrix-p0.spec.ts`)
+1. **Skill & Contract Page**: Verifies page load, tab switching, and download links.
+2. **Import Console**: Fills Paste JSON area with a valid OCPM payload, executes schema validation, and checks dry-run entity count previews.
+3. **Overview & Screening Page**: Verifies that core Screening Decision Gate buttons (Mark as Core Paper, Skip/Exclude) exist.
+4. **Workspace Review UI**: Verifies the paper switching dropdown and batch save controls.
+5. **Extraction Matrix**: Verifies detail expansions and checkbox selections on rows.
+6. **Export Workspace Page**: Confirms JSON, CSV, and Markdown download configurations.
+
+### 2.2 Full-Flow Lifecycle Test Suite (`tests/e2e/litmatrix-full-flow.spec.ts`)
+1. **Dynamic Project Wizard (`/new`)**: Fills out the multi-step project form, specifies dynamic research questions, and adds custom matrix columns (e.g. `Qubit Count`). Creates the project.
+2. **Workspace Redirect**: Confirms immediate redirect to `/projects/dynamic-full-flow-project` and sidebar navigation setup.
+3. **Dynamic Skills Loading**: Navigates to the project skill page, confirming the dynamically generated markdown and custom questions/columns are listed.
+4. **PDF Upload**: Selects a mock PDF, uploads it, and confirms it is listed in the inbox with a metadata-only label and text-extraction disclaimer.
+5. **Zotero RDF Upload**: Ingests Zotero RDF XML, validates catalog item parsing, and checks for success banners.
+6. **Screening Gate**: Selects a screening decision in the Paper Inbox dropdown, navigates to the Paper Overview, and verifies decision gate controls are present.
+7. **Schema-Driven Empty State**: Verifies the Extraction Matrix displays a clean empty state displaying user-defined custom columns (e.g., `Qubit Count`) from the contract.
+8. **Export Page**: Loads the Export tab successfully.
 
 ---
 
-## 3. End-to-End (E2E) UI Tests
+## 3. How to Run Tests
 
-We have added a Playwright-based E2E acceptance test suite located at `tests/e2e/litmatrix-p0.spec.ts`.
+### Prerequisites
+Install Playwright browser binaries (Chromium) first:
+```bash
+npx playwright install chromium
+```
 
-### Running E2E Tests
-To run the automated visual/UI E2E test suite locally:
+### Verification Commands
 
-1. **Install Browser Binaries (Chromium)** (Required once):
-   ```bash
-   npx playwright install chromium
-   ```
+Execute the full validation pipeline before staging:
 
-2. **Execute Tests**:
-   ```bash
-   npx playwright test
-   ```
+```bash
+# 1. Check TypeScript compilation
+npm run typecheck
 
-*Note: The test runner automatically boots the Next.js development server on port 3000 with an empty `DATABASE_URL` env variable to run the application in isolated mock-only mode, avoiding network/database connection overhead.*
+# 2. Check code style and linting
+npm run lint
 
-### Scenarios Covered
-1. **Skill & Contract Page**: Loads, toggles tabs (Skill Markdown, Research Questions, Extraction Schema, Command Pack), and validates download links.
-2. **Import Console**: Fills Paste JSON area with a valid OCPM payload, executes schema validation successfully, and runs a dry-run checking that preview cards display correct entity counts.
-3. **Overview & Screening Page**: Loads, and checks the presence of core Screening Decision Gate buttons (Mark as Core Paper, Mark as Background, Skip/Exclude).
-4. **Workspace Review UI**: Loads, and checks for paper switching combobox dropdown and batch save buttons.
-5. **Extraction Matrix**: Loads, expands details, checks checkbox selection on grid rows, and tests inspections.
-6. **Export Workspace Page**: Loads, and confirms JSON, CSV, and Markdown export download options.
+# 3. Build the application for production
+npm run build
 
+# 4. Run Playwright E2E tests
+npx playwright test
+```

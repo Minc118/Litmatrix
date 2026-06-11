@@ -27,9 +27,53 @@ export function PaperOverviewPanel({
     );
   }
 
+  const renderBanner = () => {
+    switch (overview.evidenceLevel) {
+      case "metadata-only":
+        return (
+          <div className="mb-6 rounded border border-blue-200 bg-blue-50/50 p-4 text-sm text-blue-800">
+            <span className="font-semibold block">Metadata-only Overview</span>
+            <p className="mt-1">
+              PDF uploaded, text extraction not yet available. No full-text or abstract content was parsed.
+            </p>
+          </div>
+        );
+      case "abstract-based":
+        return (
+          <div className="mb-6 rounded border border-amber-200 bg-amber-50/50 p-4 text-sm text-amber-800">
+            <span className="font-semibold block">Abstract-based Overview</span>
+            <p className="mt-1">
+              Derived solely from the paper&apos;s abstract and basic metadata.
+            </p>
+          </div>
+        );
+      case "full-text":
+        return (
+          <div className="mb-6 rounded border border-green-200 bg-green-50/50 p-4 text-sm text-green-800">
+            <span className="font-semibold block">Full-text Evidence Available</span>
+            <p className="mt-1">
+              The full paper text was parsed and analyzed. Extraction fields are backed by verified page/section quotes.
+            </p>
+          </div>
+        );
+      case "user-notes":
+        return (
+          <div className="mb-6 rounded border border-purple-200 bg-purple-50/50 p-4 text-sm text-purple-800">
+            <span className="font-semibold block">User Notes Overview</span>
+            <p className="mt-1">
+              Constructed from manually imported notes or user summaries.
+            </p>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <section className="space-y-6">
       <div className="lm-card p-6">
+        {renderBanner()}
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <p className="lm-label">Overview Generated</p>
@@ -56,14 +100,19 @@ export function PaperOverviewPanel({
       <div className="lm-card p-6">
         <p className="lm-label">Evidence</p>
         <div className="mt-4 space-y-3">
-          {overview.evidence.map((evidence, index) => (
-            <div key={`${evidence.paperId}-${index}`} className="rounded border border-border/50 bg-surface-muted p-4">
-              <p className="text-sm font-semibold text-foreground">{evidence.paperId}</p>
-              <p className="mt-1 text-sm leading-6 text-muted">{evidence.note ?? "Evidence note unavailable."}</p>
-            </div>
-          ))}
+          {overview.evidence.length > 0 ? (
+            overview.evidence.map((evidence, index) => (
+              <div key={`${evidence.paperId}-${index}`} className="rounded border border-border/50 bg-surface-muted p-4">
+                <p className="text-sm font-semibold text-foreground">{evidence.paperId}</p>
+                <p className="mt-1 text-sm leading-6 text-muted">{evidence.note ?? "Evidence note unavailable."}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-muted">No evidence citations linked to this overview.</p>
+          )}
         </div>
       </div>
     </section>
   );
 }
+

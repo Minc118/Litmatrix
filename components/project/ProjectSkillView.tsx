@@ -5,6 +5,7 @@ import { ProjectSidebar } from "@/components/layout/ProjectSidebar";
 import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
 import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
 import { Download, Edit2, Save } from "lucide-react";
+import type { ProjectDetail } from "@/lib/types/litmatrix";
 
 interface ExtractionField {
   key: string;
@@ -39,6 +40,7 @@ export function ProjectSkillView({ projectId }: { projectId: string }) {
     `/api/projects/${projectId}/skill`
   );
   const { data: contractData } = useLitmatrixResource<ProjectContract>(`/api/projects/${projectId}/contract`);
+  const { data: project } = useLitmatrixResource<ProjectDetail>(`/api/projects/${projectId}`);
 
   const [activeTab, setActiveTab] = useState<"markdown" | "questions" | "schema" | "commands" >("markdown");
   const [skillMd, setSkillMd] = useState<string | null>(null);
@@ -150,23 +152,23 @@ export function ProjectSkillView({ projectId }: { projectId: string }) {
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold text-foreground">Project Research Questions</h2>
                   <div className="space-y-3">
-                    {(contractData?.researchQuestionIds || []).map((id: string, idx: number) => (
-                      <div key={id} className="rounded border border-border/40 bg-[#f8fafc] p-4 flex gap-4 items-start">
-                        <div className="rounded bg-surface px-2 py-0.5 text-xs font-semibold border border-border text-muted">
-                          {id}
+                    {project?.researchQuestions && project.researchQuestions.length > 0 ? (
+                      project.researchQuestions.map((rq) => (
+                        <div key={rq.id} className="rounded border border-border/40 bg-[#f8fafc] p-4 flex gap-4 items-start">
+                          <div className="rounded bg-surface px-2 py-0.5 text-xs font-semibold border border-border text-muted">
+                            {rq.id}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              {rq.text}
+                            </p>
+                            <p className="mt-1 text-xs text-muted">Active project validation target.</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            {projectId === "ocpm-demo"
-                              ? idx === 0
-                                ? "How do object-centric approaches address limitations of case-centric process mining?"
-                                : "Which analysis tasks are supported by current OCPM methods and tools?"
-                              : "What are the main methods and findings in the literature?"}
-                          </p>
-                          <p className="mt-1 text-xs text-muted">Active project validation target.</p>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted">No research questions configured for this project.</p>
+                    )}
                   </div>
                 </div>
               )}
