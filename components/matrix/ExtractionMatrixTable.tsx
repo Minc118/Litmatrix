@@ -189,7 +189,7 @@ export function ExtractionMatrixTable({
                                 {row.evidence.map((ev, index) => (
                                   <div key={index} className="border-l-4 border-[#1f2933] pl-3 py-1 bg-[#fcfdfe] rounded-r border border-border/40 border-l-0">
                                     {ev.quote ? (
-                                      <p className="text-sm italic leading-relaxed text-foreground">"{ev.quote}"</p>
+                                      <p className="text-sm italic leading-relaxed text-foreground">{`"${ev.quote}"`}</p>
                                     ) : (
                                       <p className="text-sm italic text-muted">No quote details in citation.</p>
                                     )}

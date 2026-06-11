@@ -4,15 +4,43 @@ import { useState } from "react";
 import { ProjectSidebar } from "@/components/layout/ProjectSidebar";
 import { WorkspaceTopBar } from "@/components/layout/WorkspaceTopBar";
 import { useLitmatrixResource } from "@/lib/api/useLitmatrixResource";
-import { Download, Edit2, Play, Save, Check } from "lucide-react";
+import { Download, Edit2, Save } from "lucide-react";
+
+interface ExtractionField {
+  key: string;
+  label: string;
+  required: boolean;
+  description?: string;
+}
+
+interface AnalysisCommand {
+  id: string;
+  label: string;
+  purpose: string;
+  inputRecordTypes: string[];
+  outputResultType: string;
+  evidenceRequirements: string;
+  promptTemplate: string;
+}
+
+interface ProjectContract {
+  projectId: string;
+  skillVersion: string;
+  contractVersion: string;
+  extractionSchemaVersion: string;
+  commandPackVersion: string;
+  researchQuestionIds: string[];
+  extractionFields: ExtractionField[];
+  commandPack: AnalysisCommand[];
+}
 
 export function ProjectSkillView({ projectId }: { projectId: string }) {
   const { data: skillData, loading: skillLoading } = useLitmatrixResource<{ markdown: string }>(
     `/api/projects/${projectId}/skill`
   );
-  const { data: contractData } = useLitmatrixResource<any>(`/api/projects/${projectId}/contract`);
+  const { data: contractData } = useLitmatrixResource<ProjectContract>(`/api/projects/${projectId}/contract`);
 
-  const [activeTab, setActiveTab] = useState<"markdown" | "questions" | "schema" | "commands">("markdown");
+  const [activeTab, setActiveTab] = useState<"markdown" | "questions" | "schema" | "commands" >("markdown");
   const [skillMd, setSkillMd] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
@@ -48,7 +76,7 @@ export function ProjectSkillView({ projectId }: { projectId: string }) {
             <p className="lm-label">System contract</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">Project Skill & Contract</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
-              Configure systematic review definitions. Each project behaves as a custom Research Skill containing topic rules, schema columns, and command definitions.
+              Configure systematic literature review definitions. Each project behaves as a custom Research Skill containing topic rules, schema columns, and command definitions.
             </p>
           </div>
 
@@ -147,7 +175,7 @@ export function ProjectSkillView({ projectId }: { projectId: string }) {
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold text-foreground">Project Extraction Fields</h2>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    {(contractData?.extractionFields || []).map((field: any) => (
+                    {(contractData?.extractionFields || []).map((field: ExtractionField) => (
                       <div key={field.key} className="rounded border border-border/40 bg-[#f8fafc] p-4 flex flex-col justify-between">
                         <div>
                           <div className="flex items-center gap-2">
@@ -170,7 +198,7 @@ export function ProjectSkillView({ projectId }: { projectId: string }) {
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold text-foreground">Skill-defined Analysis Commands</h2>
                   <div className="space-y-3">
-                    {(contractData?.commandPack || []).map((cmd: any) => (
+                    {(contractData?.commandPack || []).map((cmd: AnalysisCommand) => (
                       <div key={cmd.id} className="rounded border border-border/40 bg-[#f8fafc] p-4 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-bold text-foreground">{cmd.label}</span>

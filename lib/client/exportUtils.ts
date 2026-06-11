@@ -93,7 +93,7 @@ export function exportToMarkdown(rows: ExtractionMatrixRow[], papers: Paper[], p
   downloadFile("litmatrix-extraction-report.md", md, "text/markdown");
 }
 
-export function exportToJsonBundle(rows: ExtractionMatrixRow[], papers: Paper[], projectContract: any) {
+export function exportToJsonBundle(rows: ExtractionMatrixRow[], papers: Paper[], projectContract: Record<string, unknown> | null | undefined) {
   const bundle = {
     projectId: projectContract?.projectId || "unknown",
     exportedAt: new Date().toISOString(),

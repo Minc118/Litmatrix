@@ -167,7 +167,7 @@ export async function importAntigravityJson(payload: unknown, dryRun: boolean = 
           evidence: [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-        } as any);
+        } as unknown as ExtractionMatrixRow);
       }
     }
   }

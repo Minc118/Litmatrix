@@ -11,6 +11,6 @@ export async function GET(_request: Request, context: RouteContext) {
   return dataResponse(contract.extractionFields);
 }
 
-export async function POST(_request: Request, _context: RouteContext) {
+export async function POST() {
   return dataResponse({ ok: true, message: "Extraction schema updated successfully." });
 }

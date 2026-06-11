@@ -10,7 +10,7 @@ import type { ExtractionMatrixRow, Paper } from "@/lib/types/litmatrix";
 export function ExportWorkspaceView({ projectId }: { projectId: string }) {
   const { data: rows } = useLitmatrixResource<ExtractionMatrixRow[]>(`/api/projects/${projectId}/extraction-matrix`);
   const { data: papers } = useLitmatrixResource<Paper[]>(`/api/projects/${projectId}/papers`);
-  const { data: contract } = useLitmatrixResource<any>(`/api/projects/${projectId}/contract`);
+  const { data: contract } = useLitmatrixResource<Record<string, unknown>>(`/api/projects/${projectId}/contract`);
 
   const matrixRows = rows ?? [];
   const paperList = papers ?? [];
@@ -19,7 +19,7 @@ export function ExportWorkspaceView({ projectId }: { projectId: string }) {
     if (format === "CSV") {
       exportToCSV(matrixRows, paperList);
     } else if (format === "Markdown") {
-      exportToMarkdown(matrixRows, paperList, contract?.projectId || projectId);
+      exportToMarkdown(matrixRows, paperList, (contract?.projectId as string) || projectId);
     } else if (format === "JSON") {
       exportToJsonBundle(matrixRows, paperList, contract);
     }

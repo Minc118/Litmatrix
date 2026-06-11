@@ -11,7 +11,6 @@ export async function GET(_request: Request, context: RouteContext) {
   return dataResponse({ markdown });
 }
 
-export async function POST(_request: Request, _context: RouteContext) {
-  // Simulate editing the project skill
+export async function POST() {
   return dataResponse({ ok: true, message: "Project skill updated successfully." });
 }

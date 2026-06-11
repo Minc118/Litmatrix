@@ -15,7 +15,7 @@ export function MatrixWorkspaceView({ projectId }: { projectId: string }) {
   const { data: rows, reload } = useLitmatrixResource<ExtractionMatrixRow[]>(
     `/api/projects/${projectId}/extraction-matrix`,
   );
-  const { data: contract } = useLitmatrixResource<any>(`/api/projects/${projectId}/contract`);
+  const { data: contract } = useLitmatrixResource<Record<string, unknown>>(`/api/projects/${projectId}/contract`);
 
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<"all" | "confirmed" | "pending">("all");
@@ -62,7 +62,7 @@ export function MatrixWorkspaceView({ projectId }: { projectId: string }) {
                 Export CSV {selectedRows.length > 0 && `(${selectedRows.length})`}
               </button>
               <button
-                onClick={() => exportToMarkdown(rowsToExport, paperList, contract?.projectId || projectId)}
+                onClick={() => exportToMarkdown(rowsToExport, paperList, (contract?.projectId as string) || projectId)}
                 className="flex items-center gap-1.5 rounded-sm border border-border bg-surface px-3 py-2 text-xs font-semibold text-foreground hover:bg-[#f8fafc]"
               >
                 <Download className="h-3.5 w-3.5" />
@@ -92,7 +92,7 @@ export function MatrixWorkspaceView({ projectId }: { projectId: string }) {
             <span className="text-xs font-bold uppercase tracking-wider text-muted">Filter:</span>
             <select
               value={statusFilter}
-              onChange={(e: any) => setStatusFilter(e.target.value)}
+              onChange={(e) => setStatusFilter(e.target.value as "all" | "confirmed" | "pending")}
               className="rounded border border-border bg-surface px-3 py-1.5 text-xs font-semibold outline-none focus:border-foreground"
             >
               <option value="all">Show All Active Rows</option>

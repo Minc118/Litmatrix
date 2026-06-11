@@ -3,7 +3,7 @@ require.cache[require.resolve("server-only")] = {
   id: require.resolve("server-only"),
   exports: {},
   loaded: true,
-} as any;
+} as unknown as NodeJS.Module;
 
 import { importAntigravityJson } from "../../lib/server/importers/antigravityJsonImporter";
 import { getProjectContract } from "../../lib/server/skills/projectSkills";
