@@ -3,6 +3,7 @@ import "server-only";
 import * as analysisRepository from "@/lib/server/repositories/analysisRepository";
 import * as matrixRepository from "@/lib/server/repositories/matrixRepository";
 import * as reviewRepository from "@/lib/server/repositories/reviewRepository";
+import * as synthesisRepository from "@/lib/server/repositories/synthesisRepository";
 import { isKnownReviewDecision, isNonEmptyString } from "@/lib/server/validators/litmatrixValidators";
 import type { MutationResult } from "@/lib/server/db/fallback";
 import type { ExtractionMatrixRow, ReviewDecision } from "@/lib/types/litmatrix";
@@ -82,35 +83,102 @@ export async function createReviewDecision(
 
   let matrixRow: ExtractionMatrixRow | undefined;
 
-  if (
-    suggestion.suggestionType === "extraction-field" &&
-    suggestion.paperId &&
-    suggestion.targetField &&
-    (input.decision === "accepted" || input.decision === "edited")
-  ) {
-    const confirmedValue = input.decision === "edited" ? input.editedContent : suggestion.content;
-    const matrixResult = await matrixRepository.upsertExtractionMatrixRowFromSuggestion({
-      id: `matrix-${suggestion.paperId}-${suggestion.targetField}`,
-      projectId: suggestion.projectId,
-      paperId: suggestion.paperId,
-      analysisSource: suggestion.analysisSource,
-      evidenceLevel: suggestion.evidenceLevel,
-      status: input.decision,
-      confidence: suggestion.confidence,
-      fieldKey: suggestion.targetField,
-      fieldLabel: suggestion.targetField,
-      suggestedValue: suggestion.content,
-      confirmedValue: confirmedValue ?? null,
-      confirmedByDecisionId: savedDecision.data.id,
-      evidence: suggestion.evidence,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    });
+  if (input.decision === "accepted" || input.decision === "edited") {
+    const contentVal = input.decision === "edited" ? input.editedContent || suggestion.content : suggestion.content;
 
-    if (!matrixResult.ok) {
-      return matrixResult;
+    if (suggestion.suggestionType === "extraction-field" && suggestion.paperId && suggestion.targetField) {
+      const matrixResult = await matrixRepository.upsertExtractionMatrixRowFromSuggestion({
+        id: `matrix-${suggestion.paperId}-${suggestion.targetField}`,
+        projectId: suggestion.projectId,
+        paperId: suggestion.paperId,
+        analysisSource: suggestion.analysisSource,
+        evidenceLevel: suggestion.evidenceLevel,
+        status: input.decision,
+        confidence: suggestion.confidence,
+        fieldKey: suggestion.targetField,
+        fieldLabel: suggestion.targetField,
+        suggestedValue: suggestion.content,
+        confirmedValue: contentVal ?? null,
+        confirmedByDecisionId: savedDecision.data.id,
+        evidence: suggestion.evidence,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
+
+      if (!matrixResult.ok) {
+        return matrixResult;
+      }
+      matrixRow = matrixResult.data;
+    } else if (suggestion.suggestionType === "theme") {
+      await synthesisRepository.upsertThemeClusters([{
+        id: `theme-${suggestion.id}`,
+        projectId: suggestion.projectId,
+        paperId: suggestion.paperId ?? undefined,
+        analysisSource: suggestion.analysisSource,
+        evidenceLevel: suggestion.evidenceLevel,
+        status: input.decision,
+        confidence: suggestion.confidence,
+        label: suggestion.title,
+        summary: contentVal,
+        supportingPaperIds: suggestion.paperId ? [suggestion.paperId] : [],
+        supportingMatrixRowIds: [],
+        evidence: suggestion.evidence,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }]);
+    } else if (suggestion.suggestionType === "gap") {
+      await synthesisRepository.upsertGapItems([{
+        id: `gap-${suggestion.id}`,
+        projectId: suggestion.projectId,
+        paperId: suggestion.paperId ?? undefined,
+        analysisSource: suggestion.analysisSource,
+        evidenceLevel: suggestion.evidenceLevel,
+        status: input.decision,
+        confidence: suggestion.confidence,
+        gapType: "other",
+        title: suggestion.title,
+        description: contentVal,
+        supportingPaperIds: suggestion.paperId ? [suggestion.paperId] : [],
+        evidence: suggestion.evidence,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }]);
+    } else if (suggestion.suggestionType === "argument") {
+      await synthesisRepository.upsertArgumentCandidates([{
+        id: `arg-${suggestion.id}`,
+        projectId: suggestion.projectId,
+        paperId: suggestion.paperId ?? undefined,
+        analysisSource: suggestion.analysisSource,
+        evidenceLevel: suggestion.evidenceLevel,
+        status: input.decision,
+        confidence: suggestion.confidence,
+        claim: suggestion.title,
+        rationale: contentVal,
+        supportingPaperIds: suggestion.paperId ? [suggestion.paperId] : [],
+        relatedGapIds: [],
+        evidence: suggestion.evidence,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }]);
+    } else if (suggestion.suggestionType === "innovation") {
+      await synthesisRepository.upsertInnovationOpportunities([{
+        id: `opp-${suggestion.id}`,
+        projectId: suggestion.projectId,
+        paperId: suggestion.paperId ?? undefined,
+        analysisSource: suggestion.analysisSource,
+        evidenceLevel: suggestion.evidenceLevel,
+        status: input.decision,
+        confidence: suggestion.confidence,
+        title: suggestion.title,
+        opportunity: suggestion.title,
+        rationale: contentVal,
+        supportingPaperIds: suggestion.paperId ? [suggestion.paperId] : [],
+        relatedGapIds: [],
+        evidence: suggestion.evidence,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }]);
     }
-    matrixRow = matrixResult.data;
   }
 
   return {
