@@ -278,6 +278,10 @@ const presentationPlanSchema = z.object({
 // Complete Antigravity Payload Schema
 export const antigravityPayloadSchema = z.object({
   projectId: z.string(),
+  skillVersion: z.string().optional(),
+  contractVersion: z.string().optional(),
+  extractionSchemaVersion: z.string().optional(),
+  commandPackVersion: z.string().optional(),
   papers: z.array(paperSchema).optional().default([]),
   paperOverviews: z.array(paperOverviewSchema).optional().default([]),
   aiSuggestions: z.array(aiSuggestionSchema).optional().default([]),

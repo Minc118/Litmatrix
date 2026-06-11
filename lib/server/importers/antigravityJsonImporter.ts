@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isDatabaseConfigured } from "@/lib/server/db/client";
 import { getServerEnv } from "@/lib/server/config/env";
 import { getMutationDbState } from "@/lib/server/db/fallback";
 import * as projectRepository from "@/lib/server/repositories/projectRepository";
@@ -12,6 +13,7 @@ import {
   antigravityPayloadSchema,
   normalizeAnalysisMetadata,
 } from "@/lib/server/validators/antigravityValidator";
+import { getProjectContract } from "@/lib/server/skills/projectSkills";
 import type { ImportJob, ProviderCapability, PaperOverview, ExtractionMatrixRow } from "@/lib/types/litmatrix";
 
 export function getAntigravityImporterStatus(): ProviderCapability {
@@ -38,6 +40,7 @@ export type ImporterResult =
         recordsRejected: number;
         validationErrors: Array<{ path?: string; message: string }>;
         importJobId: string;
+        comparisonPossible?: boolean;
       };
     }
   | {
@@ -49,16 +52,18 @@ export type ImporterResult =
       importJobId?: string;
     };
 
-export async function importAntigravityJson(payload: unknown): Promise<ImporterResult> {
-  // 1. Check DB State
-  const dbState = getMutationDbState();
-  if (!dbState.ok) {
-    return {
-      ok: false,
-      code: dbState.code,
-      message: dbState.message,
-      status: dbState.status,
-    };
+export async function importAntigravityJson(payload: unknown, dryRun: boolean = false): Promise<ImporterResult> {
+  // 1. Check DB State (only if NOT dryRun)
+  if (!dryRun) {
+    const dbState = getMutationDbState();
+    if (!dbState.ok) {
+      return {
+        ok: false,
+        code: dbState.code,
+        message: dbState.message,
+        status: dbState.status,
+      };
+    }
   }
 
   // 2. Validate structural schema
@@ -87,6 +92,188 @@ export async function importAntigravityJson(payload: unknown): Promise<ImporterR
       code: "NOT_FOUND",
       message: `Project ${data.projectId} not found.`,
       status: 404,
+    };
+  }
+
+  // 3a. Contract & Version Validation (P0.2)
+  const contract = getProjectContract(data.projectId);
+  const contractValidationErrors: Array<{ path?: string; message: string }> = [];
+
+  // Version check
+  if (data.skillVersion && data.skillVersion !== contract.skillVersion) {
+    contractValidationErrors.push({
+      path: "skillVersion",
+      message: `Skill version mismatch: Payload is ${data.skillVersion}, project requires ${contract.skillVersion}.`,
+    });
+  }
+  if (data.contractVersion && data.contractVersion !== contract.contractVersion) {
+    contractValidationErrors.push({
+      path: "contractVersion",
+      message: `Contract version mismatch: Payload is ${data.contractVersion}, project requires ${contract.contractVersion}.`,
+    });
+  }
+
+  // Schema check: validation of field keys
+  const schemaKeys = new Set(contract.extractionFields.map((f) => f.key));
+  const requiredKeys = contract.extractionFields.filter((f) => f.required).map((f) => f.key);
+  const optionalKeys = contract.extractionFields.filter((f) => !f.required).map((f) => f.key);
+
+  // Validate matrix row fields
+  for (const row of data.extractionMatrixRows) {
+    if (!schemaKeys.has(row.fieldKey)) {
+      contractValidationErrors.push({
+        path: `extractionMatrixRows.${row.id || "unknown"}.fieldKey`,
+        message: `Unknown field key '${row.fieldKey}' found in payload. Fields must match the project extraction schema.`,
+      });
+    }
+    // Missing evidence check for confirmed records (Status accepted or edited)
+    if ((row.status === "accepted" || row.status === "edited") && (!row.evidence || row.evidence.length === 0)) {
+      // Demote to pending-review as per PRD
+      row.status = "pending-review";
+    }
+  }
+
+  // Check required fields per paper
+  for (const paper of data.papers) {
+    const paperRows = data.extractionMatrixRows.filter((r) => r.paperId === paper.id);
+    for (const reqKey of requiredKeys) {
+      const foundRow = paperRows.find((r) => r.fieldKey === reqKey);
+      const isMissingVal = !foundRow || (!foundRow.suggestedValue && !foundRow.confirmedValue);
+      if (isMissingVal) {
+        contractValidationErrors.push({
+          path: `papers.${paper.id}.requiredField.${reqKey}`,
+          message: `Missing required field: '${reqKey}' is required for paper '${paper.title || paper.id}'.`,
+        });
+      }
+    }
+
+    // Auto-populate missing optional fields as "Not specified in the provided text."
+    for (const optKey of optionalKeys) {
+      const foundRow = paperRows.find((r) => r.fieldKey === optKey);
+      if (!foundRow) {
+        const fieldDef = contract.extractionFields.find((f) => f.key === optKey)!;
+        data.extractionMatrixRows.push({
+          id: `auto-${paper.id}-${optKey}`,
+          projectId: data.projectId,
+          paperId: paper.id,
+          fieldKey: optKey,
+          fieldLabel: fieldDef.label,
+          suggestedValue: "Not specified in the provided text.",
+          confirmedValue: null,
+          status: "pending-review",
+          confidence: "low",
+          analysisSource: "antigravity-local",
+          evidenceLevel: "metadata-only",
+          evidence: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any);
+      }
+    }
+  }
+
+  if (contractValidationErrors.length > 0) {
+    return {
+      ok: false,
+      code: "IMPORT_VALIDATION_FAILED",
+      message: "Contract validation failed.",
+      status: 400,
+      validationErrors: contractValidationErrors,
+    };
+  }
+
+  // 3b. Dry Run logic
+  if (dryRun) {
+    const dbAvailable = isDatabaseConfigured();
+    let recordsCreated = 0;
+    let recordsUpdated = 0;
+    let recordsSkipped = 0;
+
+    // Only compare if DB is configured, otherwise counts remain 0
+    if (dbAvailable) {
+      const [
+        existingPapers,
+        existingOverviews,
+        existingSuggestions,
+        existingMatrixRows,
+        existingThemeClusters,
+        existingConsensusItems,
+        existingGapItems,
+        existingArguments,
+        existingOpportunities,
+        existingWritingPlan,
+        existingPresentationPlan,
+      ] = await Promise.all([
+        paperRepository.listPapersByProjectId(data.projectId),
+        analysisRepository.listPaperOverviews(data.projectId),
+        analysisRepository.listAISuggestions(data.projectId),
+        matrixRepository.listExtractionMatrixRows(data.projectId),
+        synthesisRepository.listThemeClusters(data.projectId),
+        synthesisRepository.listConsensusConflictItems(data.projectId),
+        synthesisRepository.listGapItems(data.projectId),
+        synthesisRepository.listArgumentCandidates(data.projectId),
+        synthesisRepository.listInnovationOpportunities(data.projectId),
+        synthesisRepository.getWritingPlan(data.projectId),
+        synthesisRepository.getPresentationPlan(data.projectId),
+      ]);
+
+      const existingPaperIds = new Set(existingPapers.map((p) => p.id));
+      const existingOverviewsMap = new Map(existingOverviews.map((x) => [x.id, x.status]));
+      const existingSuggestionsMap = new Map(existingSuggestions.map((x) => [x.id, x.status]));
+      const existingMatrixRowsMap = new Map(existingMatrixRows.map((x) => [x.id, x.status]));
+      const existingThemeClustersMap = new Map(existingThemeClusters.map((x) => [x.id, x.status]));
+      const existingConsensusItemsMap = new Map(existingConsensusItems.map((x) => [x.id, x.status]));
+      const existingGapItemsMap = new Map(existingGapItems.map((x) => [x.id, x.status]));
+      const existingArgumentsMap = new Map(existingArguments.map((x) => [x.id, x.status]));
+      const existingOpportunitiesMap = new Map(existingOpportunities.map((x) => [x.id, x.status]));
+      const existingWritingPlanMap = new Map(existingWritingPlan ? [[existingWritingPlan.id, existingWritingPlan.status]] : []);
+      const existingPresentationPlanMap = new Map(existingPresentationPlan ? [[existingPresentationPlan.id, existingPresentationPlan.status]] : []);
+
+      // Simulate Papers
+      for (const p of data.papers) {
+        if (existingPaperIds.has(p.id)) {
+          recordsUpdated++;
+        } else {
+          recordsCreated++;
+        }
+      }
+
+      const simulate = (incoming: Array<{ id: string }>, existingMap: Map<string, string>) => {
+        for (const item of incoming) {
+          const status = existingMap.get(item.id);
+          if (status === "accepted" || status === "edited") {
+            recordsSkipped++;
+          } else if (status) {
+            recordsUpdated++;
+          } else {
+            recordsCreated++;
+          }
+        }
+      };
+
+      simulate(data.paperOverviews, existingOverviewsMap);
+      simulate(data.aiSuggestions, existingSuggestionsMap);
+      simulate(data.extractionMatrixRows, existingMatrixRowsMap);
+      simulate(data.themeClusters, existingThemeClustersMap);
+      simulate(data.consensusConflictItems, existingConsensusItemsMap);
+      simulate(data.gapItems, existingGapItemsMap);
+      simulate(data.argumentCandidates, existingArgumentsMap);
+      simulate(data.innovationOpportunities, existingOpportunitiesMap);
+      simulate(data.writingPlans, existingWritingPlanMap);
+      simulate(data.presentationPlans, existingPresentationPlanMap);
+    }
+
+    return {
+      ok: true,
+      data: {
+        recordsCreated,
+        recordsUpdated,
+        recordsSkipped,
+        recordsRejected: 0,
+        validationErrors: [],
+        importJobId: "job-dry-run",
+        comparisonPossible: dbAvailable,
+      },
     };
   }
 
