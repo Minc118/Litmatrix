@@ -18,6 +18,7 @@ import {
 
 const navItems = [
   { label: "Dashboard", href: "", icon: FolderKanban },
+  { label: "Project Skill", href: "/skill", icon: Settings2 },
   { label: "Papers", href: "/papers", icon: BookOpen },
   { label: "Overview", href: "/overview", icon: FileText },
   { label: "AI Analysis", href: "/analysis", icon: Brain },
