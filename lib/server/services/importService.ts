@@ -12,8 +12,8 @@ export async function listProjectImportJobs(projectId: string) {
   return importJobRepository.listImportJobs(projectId);
 }
 
-export async function importAntigravityJson(payload: unknown): Promise<ImporterResult> {
-  return importAntigravityJsonReal(payload);
+export async function importAntigravityJson(payload: unknown, dryRun?: boolean): Promise<ImporterResult> {
+  return importAntigravityJsonReal(payload, dryRun);
 }
 
 export async function importManualNotes() {

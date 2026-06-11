@@ -12,3 +12,7 @@ dist/
 .env*.local
 !.env.example
 .env.local
+
+# Research input exports
+research-input/
+research-output/
