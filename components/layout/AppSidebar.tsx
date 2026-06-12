@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Archive, FilePlus2, FolderOpen, Import as ImportIcon, Moon, Search, Settings, UserCircle } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Archive, FilePlus2, FolderOpen, Import as ImportIcon, Moon, Search, Settings, UserCircle, LogOut } from "lucide-react";
+import { authClient } from "@/lib/auth/client";
 
 function sidebarItemClass(active: boolean) {
   return `flex items-center gap-3 rounded px-3 py-2 text-sm transition-colors ${
@@ -14,6 +15,14 @@ function sidebarItemClass(active: boolean) {
 
 export function AppSidebar({ projectId = "ocpm-demo" }: { projectId?: string }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
+
+  const handleSignOut = async () => {
+    await authClient.signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <aside className="flex min-h-screen w-[280px] shrink-0 flex-col border-r border-border/50 bg-[#f8fafc]">
@@ -85,14 +94,31 @@ export function AppSidebar({ projectId = "ocpm-demo" }: { projectId?: string }) 
             Theme
           </div>
         </div>
-        <Link href="/settings" className="flex items-center gap-3 rounded bg-surface p-3 hover:bg-surface-muted">
-          <UserCircle className="h-8 w-8 text-muted" aria-hidden="true" />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">Demo Researcher</p>
-            <p className="truncate text-xs text-muted">demo mode</p>
+        {session ? (
+          <div className="flex items-center gap-3 rounded bg-surface p-3">
+            <UserCircle className="h-8 w-8 text-muted shrink-0" aria-hidden="true" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-foreground">{session.user.name || "User"}</p>
+              <p className="truncate text-xs text-muted">{session.user.email}</p>
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="p-1.5 text-muted hover:text-[#f85149] hover:bg-surface-muted rounded transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
-          <Settings className="ml-auto h-4 w-4 text-muted" aria-hidden="true" />
-        </Link>
+        ) : (
+          <Link href="/auth/sign-in" className="flex items-center gap-3 rounded bg-surface p-3 hover:bg-surface-muted">
+            <UserCircle className="h-8 w-8 text-muted shrink-0" aria-hidden="true" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-foreground">Sign In</p>
+              <p className="truncate text-xs text-muted">demo mode</p>
+            </div>
+            <Settings className="ml-auto h-4 w-4 text-muted" aria-hidden="true" />
+          </Link>
+        )}
       </div>
     </aside>
   );
