@@ -2,7 +2,10 @@ import { createNeonAuth } from "@neondatabase/auth/next/server";
 import { headers as getNextHeaders } from "next/headers";
 
 const baseUrl = process.env.NEON_AUTH_BASE_URL || "http://localhost:3000/api/auth";
-const cookieSecret = process.env.NEON_AUTH_COOKIE_SECRET || "a-dummy-cookie-secret-for-development-32-chars-long";
+const rawSecret = process.env.NEON_AUTH_COOKIE_SECRET;
+const cookieSecret = (rawSecret && rawSecret.trim().length >= 32)
+  ? rawSecret
+  : "a-dummy-cookie-secret-for-development-32-chars-long";
 
 const originalAuth = createNeonAuth({
   baseUrl,

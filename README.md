@@ -63,7 +63,16 @@ npx playwright test
 
 ---
 
-## 5. Current Implementation Limitations
+## 5. Authentication & Access Control
+
+LitMatrix uses **Neon Auth** for user session management:
+* **Public Registration & Login (Default)**: Enabled by default. Any user can sign up, sign in, and create their own projects.
+* **Project Privacy**: Projects are private by default. Each authenticated user can only access their own projects, while the `ocpm-demo` workspace remains publicly accessible as a demo.
+* **Optional Allowlist Gate**: For private testing or internal beta runs, you can restrict access by setting `AUTH_ALLOWLIST_ENABLED=true` and configuring allowed user email addresses in `AUTH_ALLOWED_EMAILS` (application-level user emails, not Neon administrative logins).
+
+---
+
+## 6. Current Implementation Limitations
 * **PDF full-text extraction** is not implemented yet. Ingested papers are marked as `Metadata-only` with text-extraction disclaimers.
 * **Deep Extraction** is not automatically performed (it does not invoke any server-side extractor or mock generator to prevent data fabrication).
 * **Zotero Local API** is a planned/unavailable integration, clearly badged as such in the UI.

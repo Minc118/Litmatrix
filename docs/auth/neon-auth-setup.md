@@ -26,9 +26,11 @@ DATABASE_URL=postgresql://...
 NEON_AUTH_BASE_URL=https://your-project-auth.neon.tech
 NEON_AUTH_COOKIE_SECRET=your_32_character_long_random_cookie_secret
 
-# Application access gate
-AUTH_ALLOWLIST_ENABLED=true
-AUTH_ALLOWED_EMAILS=user1@example.com,user2@example.com
+# Public registration & login are allowed by default. Set to true only for internal testing/private beta.
+AUTH_ALLOWLIST_ENABLED=false
+# Optional application-level restrictor (used ONLY when AUTH_ALLOWLIST_ENABLED=true).
+# This is NOT your Neon Console account email.
+AUTH_ALLOWED_EMAILS=
 ```
 
 > [!TIP]
@@ -68,8 +70,8 @@ AUTH_ALLOWED_EMAILS=user1@example.com,user2@example.com
 4. Verify the database compiles, works, and does not regress existing data.
 5. Only apply the migration to the production/main database during approved deployment windows.
 
-## Beta Limitations & Allowlist Gate
+## Public Registration & Optional Allowlist Gate
 
-- **Neon Auth Beta**: Neon Auth is currently in Beta. Advanced configuration options might require manual console updates.
-- **Public Signups**: Public registration is enabled by default in the Neon Auth Beta console.
-- **Application Allowlist**: Since we cannot disable public registration at the console level in Beta, we implemented an application-level gate (`AUTH_ALLOWLIST_ENABLED` and `AUTH_ALLOWED_EMAILS`). If enabled, only emails on the allowlist can create new project workspaces.
+- **Public Signups & Logins (Default)**: By default, public registration and login are fully allowed (`AUTH_ALLOWLIST_ENABLED=false`). Any user can sign up, sign in, and access their own authenticated workspace.
+- **Application Allowlist Gate (Optional)**: If you need to restrict workspace creation for private beta or internal testing, set `AUTH_ALLOWLIST_ENABLED=true` and provide a comma-separated list of permitted emails in `AUTH_ALLOWED_EMAILS`.
+  - **Important**: The emails in `AUTH_ALLOWED_EMAILS` are application-level user accounts (e.g. `researcher@example.com`), **NOT** your administrative Neon Console account email. This restriction only applies when `AUTH_ALLOWLIST_ENABLED` is explicitly configured as `true`.
