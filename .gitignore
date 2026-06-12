@@ -20,3 +20,9 @@ research-output/
 # Test outputs
 test-results/
 playwright-report/
+
+# Agent directories and lockfiles
+.agents/
+.claude/
+.goose/
+skills-lock.json
