@@ -36,7 +36,8 @@ export const auth = {
       }
     }
 
-    if (testHeader || process.env.NEXT_PUBLIC_MOCK_AUTH === "true") {
+    const isMockAllowed = process.env.PLAYWRIGHT_MOCK_AUTH === "true";
+    if (isMockAllowed && (testHeader || process.env.NEXT_PUBLIC_MOCK_AUTH === "true")) {
       return {
         data: {
           user: {

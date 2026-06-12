@@ -2,6 +2,8 @@ import { dataResponse } from "@/lib/server/http";
 import { listProjectSuggestions } from "@/lib/server/services/analysisService";
 import { isKnownReviewStatus } from "@/lib/server/validators/litmatrixValidators";
 import type { AISuggestion } from "@/lib/types/litmatrix";
+import { withProjectOwner } from "@/lib/auth/owner";
+import { NextRequest } from "next/server";
 
 type ProjectRouteContext = {
   params: Promise<{ projectId: string }>;
@@ -18,7 +20,7 @@ const suggestionTypes: AISuggestion["suggestionType"][] = [
   "presentation-plan",
 ];
 
-export async function GET(request: Request, context: ProjectRouteContext) {
+export const GET = withProjectOwner(async (request: NextRequest, context: ProjectRouteContext) => {
   const { projectId } = await context.params;
   const searchParams = new URL(request.url).searchParams;
   const status = searchParams.get("status");
@@ -33,4 +35,4 @@ export async function GET(request: Request, context: ProjectRouteContext) {
         : null,
     }),
   );
-}
+});
