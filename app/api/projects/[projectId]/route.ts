@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { dataResponse, errorResponse } from "@/lib/server/http";
 import { getProject } from "@/lib/server/services/projectService";
 import { verifyProjectOwner } from "@/lib/auth/owner";

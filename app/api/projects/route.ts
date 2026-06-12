@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { dataResponse, errorResponse } from "@/lib/server/http";
 import { listProjects, createProject } from "@/lib/server/services/projectService";
 import { NextRequest } from "next/server";

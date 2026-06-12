@@ -129,6 +129,7 @@ export function NewAnalysisWorkspace() {
       }
 
       // Successful creation! Redirect to the project dashboard page
+      router.refresh();
       router.push(`/projects/${json.data.id}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "An unexpected error occurred.";

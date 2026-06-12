@@ -41,7 +41,7 @@ export function ProjectSidebar({ projectId }: { projectId: string }) {
   return (
     <aside className="flex min-h-screen w-[280px] shrink-0 flex-col border-r border-border/50 bg-[#f8fafc]">
       <div className="border-b border-border/40 p-6">
-        <Link href="/" className="text-xs font-semibold uppercase tracking-widest text-muted hover:text-foreground">
+        <Link href="/projects" className="text-xs font-semibold uppercase tracking-widest text-muted hover:text-foreground">
           LitMatrix
         </Link>
         <h1 className="mt-1 text-lg font-bold tracking-tight text-foreground">{projectLabel}</h1>

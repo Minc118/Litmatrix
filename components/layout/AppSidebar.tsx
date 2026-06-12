@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Archive, FilePlus2, FolderOpen, Import as ImportIcon, Moon, Search, Settings, UserCircle, LogOut } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
+import { useState, useEffect } from "react";
+import type { Project } from "@/lib/types/litmatrix";
 
 function sidebarItemClass(active: boolean) {
   return `flex items-center gap-3 rounded px-3 py-2 text-sm transition-colors ${
@@ -17,6 +19,31 @@ export function AppSidebar({ projectId = "ocpm-demo" }: { projectId?: string }) 
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = authClient.useSession();
+  const [projects, setProjects] = useState<Project[]>([
+    { id: "ocpm-demo", title: "Object-Centric Process Mining Survey", demo: true } as Project
+  ]);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/projects")
+      .then((res) => res.json())
+      .then((payload) => {
+        if (active && payload?.data) {
+          const loaded = payload.data;
+          const merged = [...loaded];
+          if (!merged.some((p: Project) => p.id === "ocpm-demo")) {
+            merged.unshift({ id: "ocpm-demo", title: "Object-Centric Process Mining Survey", demo: true } as Project);
+          }
+          setProjects(merged);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load projects in sidebar", err);
+      });
+    return () => {
+      active = false;
+    };
+  }, [session, pathname]);
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -27,7 +54,7 @@ export function AppSidebar({ projectId = "ocpm-demo" }: { projectId?: string }) 
   return (
     <aside className="flex min-h-screen w-[280px] shrink-0 flex-col border-r border-border/50 bg-[#f8fafc]">
       <div className="border-b border-border/40 p-6">
-        <Link href="/" className="text-lg font-bold tracking-tight text-foreground hover:text-muted">
+        <Link href="/projects" className="text-lg font-bold tracking-tight text-foreground hover:text-muted">
           LitMatrix
         </Link>
         <p className="mt-1 text-xs text-muted">AI Research Workspace</p>
@@ -66,17 +93,25 @@ export function AppSidebar({ projectId = "ocpm-demo" }: { projectId?: string }) 
         </div>
         <p className="lm-label mb-2 mt-6">Projects</p>
         <div className="space-y-1">
-          <Link
-            href={`/projects/${projectId}`}
-            className={sidebarItemClass(pathname === `/projects/${projectId}`)}
-            aria-current={pathname === `/projects/${projectId}` ? "page" : undefined}
-          >
-            <FolderOpen
-              className={`h-4 w-4 ${pathname === `/projects/${projectId}` ? "text-white stroke-white" : ""}`}
-              aria-hidden="true"
-            />
-            <span className={pathname === `/projects/${projectId}` ? "!text-white" : ""}>OCPM Survey</span>
-          </Link>
+          {projects.map((p) => {
+            const isCurrent = pathname === `/projects/${p.id}` || pathname.startsWith(`/projects/${p.id}/`);
+            return (
+              <Link
+                key={p.id}
+                href={`/projects/${p.id}`}
+                className={sidebarItemClass(isCurrent)}
+                aria-current={isCurrent ? "page" : undefined}
+              >
+                <FolderOpen
+                  className={`h-4 w-4 ${isCurrent ? "text-white stroke-white" : ""}`}
+                  aria-hidden="true"
+                />
+                <span className={isCurrent ? "!text-white" : ""}>
+                  {p.id === "ocpm-demo" ? "OCPM Survey" : p.title}
+                </span>
+              </Link>
+            );
+          })}
           <span className={sidebarItemClass(false)}>
             <Archive className="h-4 w-4" aria-hidden="true" />
             <span>Archived</span>
