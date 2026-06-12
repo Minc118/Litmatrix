@@ -3,10 +3,13 @@ import { test, expect } from "@playwright/test";
 test.describe("LitMatrix Full Flow E2E", () => {
   const pageErrors: Error[] = [];
 
-  test.beforeEach(({ page }) => {
+  test.beforeEach(async ({ page, context }) => {
     pageErrors.length = 0;
     page.on("pageerror", (exception) => {
       pageErrors.push(exception);
+    });
+    await context.setExtraHTTPHeaders({
+      "x-mock-user-id": "test-user-id",
     });
   });
 

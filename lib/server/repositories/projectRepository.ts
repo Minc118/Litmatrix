@@ -23,10 +23,13 @@ if (process.env.NODE_ENV !== "production") {
   globalForProjects.inMemoryProjects = inMemoryProjects;
 }
 
-export async function listProjects(): Promise<Project[]> {
+export async function listProjects(userId?: string | null): Promise<Project[]> {
   const dbProjects = await withDatabaseReadFallback(
     async (db) => {
-      const rows = await db.select().from(projects);
+      if (!userId) {
+        return [];
+      }
+      const rows = await db.select().from(projects).where(eq(projects.userId, userId));
       return rows.map(toProject);
     },
     () => [ocpmDemoProject],
@@ -34,16 +37,19 @@ export async function listProjects(): Promise<Project[]> {
 
   const all = [...dbProjects];
   for (const p of inMemoryProjects.values()) {
-    if (!all.some((x) => x.id === p.id)) {
-      all.push({
-        id: p.id,
-        title: p.title,
-        description: p.description,
-        status: p.status,
-        demo: p.demo,
-        createdAt: p.createdAt,
-        updatedAt: p.updatedAt,
-      });
+    if (p.demo || (userId && p.userId === userId)) {
+      if (!all.some((x) => x.id === p.id)) {
+        all.push({
+          id: p.id,
+          title: p.title,
+          description: p.description,
+          status: p.status,
+          demo: p.demo,
+          userId: p.userId,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+        });
+      }
     }
   }
   return all;
@@ -88,7 +94,7 @@ export async function getProjectById(projectId: string): Promise<ProjectDetail |
 }
 
 export async function createProject(
-  projectData: { id: string; title: string; description?: string | null; demo?: boolean },
+  projectData: { id: string; title: string; description?: string | null; demo?: boolean; userId?: string | null },
   rqs: Array<{ text: string }>
 ): Promise<ProjectDetail> {
   const now = new Date().toISOString();
@@ -98,6 +104,7 @@ export async function createProject(
     description: projectData.description || null,
     status: "active",
     demo: projectData.demo ?? false,
+    userId: projectData.userId || null,
     createdAt: now,
     updatedAt: now,
     researchQuestions: rqs.map((rq, index) => ({
@@ -122,6 +129,7 @@ export async function createProject(
         title: projectData.title,
         description: projectData.description || null,
         status: "active",
+        userId: projectData.userId || null,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

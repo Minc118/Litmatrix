@@ -1,17 +1,18 @@
 import { dataResponse, errorResponse } from "@/lib/server/http";
 import { listProjectPapers, createPaperFromUpload, importZoteroRDF } from "@/lib/server/services/paperService";
 import { NextRequest } from "next/server";
+import { withProjectOwner } from "@/lib/auth/owner";
 
 type ProjectRouteContext = {
   params: Promise<{ projectId: string }>;
 };
 
-export async function GET(_request: Request, context: ProjectRouteContext) {
+export const GET = withProjectOwner(async (_request: NextRequest, context: ProjectRouteContext) => {
   const { projectId } = await context.params;
   return dataResponse(await listProjectPapers(projectId));
-}
+});
 
-export async function POST(req: NextRequest, context: ProjectRouteContext) {
+export const POST = withProjectOwner(async (req: NextRequest, context: ProjectRouteContext) => {
   try {
     const { projectId } = await context.params;
     const contentType = req.headers.get("content-type") || "";
@@ -82,5 +83,5 @@ export async function POST(req: NextRequest, context: ProjectRouteContext) {
     const msg = err instanceof Error ? err.message : "Failed to add paper";
     return errorResponse("SERVER_ERROR", msg, 500);
   }
-}
+});
 

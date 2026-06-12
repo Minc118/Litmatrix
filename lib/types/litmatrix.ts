@@ -51,6 +51,7 @@ export type Project = {
   description?: string | null;
   status?: "draft" | "active" | "archived";
   demo?: boolean;
+  userId?: string | null;
   createdAt: string;
   updatedAt: string;
 };

@@ -124,6 +124,7 @@ export const projects = pgTable("projects", {
   description: text("description"),
   status: projectStatusEnum("status").$type<NonNullable<Project["status"]>>().notNull().default("draft"),
   demo: boolean("demo").notNull().default(false),
+  userId: text("user_id"),
   ...timestamps,
 });
 

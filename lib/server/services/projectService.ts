@@ -3,22 +3,25 @@ import "server-only";
 import * as projectRepository from "@/lib/server/repositories/projectRepository";
 import { registerProjectSkill, type ExtractionField, type AnalysisCommand, type ProjectContract } from "@/lib/server/skills/projectSkills";
 
-export async function listProjects() {
-  return projectRepository.listProjects();
+export async function listProjects(userId?: string | null) {
+  return projectRepository.listProjects(userId);
 }
 
 export async function getProject(projectId: string) {
   return projectRepository.getProjectById(projectId);
 }
 
-export async function createProject(data: {
-  title: string;
-  topic: string;
-  reviewType: string;
-  writingGoal: string;
-  researchQuestions: string[];
-  extractionFields: Array<{ key: string; label: string; required: boolean; description?: string }>;
-}) {
+export async function createProject(
+  data: {
+    title: string;
+    topic: string;
+    reviewType: string;
+    writingGoal: string;
+    researchQuestions: string[];
+    extractionFields: Array<{ key: string; label: string; required: boolean; description?: string }>;
+  },
+  userId?: string | null
+) {
   const projectId = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   const id = projectId || "custom-project";
 
@@ -28,7 +31,8 @@ export async function createProject(data: {
     id,
     title: data.title,
     description: `Topic: ${data.topic}. Type: ${data.reviewType}. Goal: ${data.writingGoal}`,
-    demo: false
+    demo: false,
+    userId: userId || null
   }, rqs);
 
   const fields: ExtractionField[] = data.extractionFields.map((f) => ({

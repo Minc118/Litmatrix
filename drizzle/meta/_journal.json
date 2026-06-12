@@ -8,6 +8,13 @@
       "when": 1781081432075,
       "tag": "0000_hot_expediter",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781223469520,
+      "tag": "0001_motionless_vector",
+      "breakpoints": true
     }
   ]
 }

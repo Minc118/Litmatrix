@@ -24,6 +24,7 @@ export default defineConfig({
     reuseExistingServer: false,
     env: {
       DATABASE_URL: "",
+      PLAYWRIGHT_MOCK_AUTH: "true",
     },
     stdout: "ignore",
     stderr: "pipe",
