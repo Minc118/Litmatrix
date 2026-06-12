@@ -1,12 +1,14 @@
 import { dataResponse } from "@/lib/server/http";
 import { listProjectReviewDecisions } from "@/lib/server/services/reviewService";
+import { withProjectOwner } from "@/lib/auth/owner";
+import { NextRequest } from "next/server";
 
 type ProjectRouteContext = {
   params: Promise<{ projectId: string }>;
 };
 
-export async function GET(request: Request, context: ProjectRouteContext) {
+export const GET = withProjectOwner(async (request: NextRequest, context: ProjectRouteContext) => {
   const { projectId } = await context.params;
   const paperId = new URL(request.url).searchParams.get("paperId");
   return dataResponse(await listProjectReviewDecisions(projectId, paperId));
-}
+});

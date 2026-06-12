@@ -82,6 +82,7 @@ export function toProject(row: ProjectRow): Project {
     description: row.description,
     status: row.status,
     demo: row.demo,
+    userId: row.userId,
     createdAt: requiredIso(row.createdAt),
     updatedAt: requiredIso(row.updatedAt),
   };

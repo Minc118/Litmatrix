@@ -1,13 +1,32 @@
 import { dataResponse, errorResponse } from "@/lib/server/http";
 import { listProjects, createProject } from "@/lib/server/services/projectService";
 import { NextRequest } from "next/server";
+import { auth } from "@/lib/auth/server";
 
 export async function GET() {
-  return dataResponse(await listProjects());
+  const { data: session } = await auth.getSession();
+  const userId = session?.user?.id || null;
+  return dataResponse(await listProjects(userId));
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const { data: session } = await auth.getSession();
+    const userId = session?.user?.id || null;
+    const email = session?.user?.email;
+
+    // Signup Allowlist check
+    if (process.env.AUTH_ALLOWLIST_ENABLED === "true") {
+      const allowedEmails = (process.env.AUTH_ALLOWED_EMAILS || "")
+        .split(",")
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean);
+
+      if (!email || !allowedEmails.includes(email.toLowerCase())) {
+        return errorResponse("FORBIDDEN", "Your email is not on the allowlist for creating projects.", 403);
+      }
+    }
+
     const body = await req.json();
     const { title, topic, reviewType, writingGoal, researchQuestions, extractionFields } = body;
 
@@ -22,7 +41,7 @@ export async function POST(req: NextRequest) {
       writingGoal: writingGoal || "Survey Paper",
       researchQuestions: researchQuestions || [],
       extractionFields: extractionFields || [],
-    });
+    }, userId);
 
     return dataResponse(project);
   } catch (err) {
