@@ -2,10 +2,19 @@ import { createNeonAuth } from "@neondatabase/auth/next/server";
 import { headers as getNextHeaders } from "next/headers";
 
 const baseUrl = process.env.NEON_AUTH_BASE_URL || "http://localhost:3000/api/auth";
-const rawSecret = process.env.NEON_AUTH_COOKIE_SECRET;
-const cookieSecret = (rawSecret && rawSecret.trim().length >= 32)
-  ? rawSecret
-  : "a-dummy-cookie-secret-for-development-32-chars-long";
+const rawSecret = process.env.NEON_AUTH_COOKIE_SECRET?.trim();
+
+if (process.env.NODE_ENV === "production" && (!rawSecret || rawSecret.length < 32)) {
+  throw new Error(
+    "NEON_AUTH_COOKIE_SECRET must be set to at least 32 characters in production."
+  );
+}
+
+// Development/testing fallback secret. Never allowed in production.
+const cookieSecret =
+  rawSecret && rawSecret.length >= 32
+    ? rawSecret
+    : "development-only-cookie-secret-do-not-use-in-production";
 
 const originalAuth = createNeonAuth({
   baseUrl,
